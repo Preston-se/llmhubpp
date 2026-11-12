@@ -1,0 +1,10 @@
+{
+	"id": "llmhubpp",
+	"name": "Llmhub++",
+	"minAppVersion": "1.13.0",
+	"description": "Chat with local or hosted models, search and cite vault notes, and automate workflows with Safe Guard and an editable Inbox preset.",
+	"author": "takeshy（原作者）、Peter、Codex",
+	"authorUrl": "https://github.com/Preston-se/llmhubpp",
+	"isDesktopOnly": true,
+	"version": "1.261112.1"
+}

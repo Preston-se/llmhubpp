@@ -1,0 +1,112 @@
+import { createRoot, Root } from "react-dom/client";
+import { ItemView, WorkspaceLeaf, IconName, TFile } from "obsidian";
+import type { LlmHubPlugin } from "src/plugin";
+import TabContainer, { TabContainerRef, TabType } from "./components/TabContainer";
+import type { ReadingContext } from "./readingContext";
+
+export const VIEW_TYPE_GEMINI_CHAT = "hub-chat-view";
+
+export class ChatView extends ItemView {
+  plugin: LlmHubPlugin;
+  reactRoot!: Root;
+  private tabContainerRef: TabContainerRef | null = null;
+  private pendingReadingActions: Array<(target: TabContainerRef) => void> = [];
+  private widenedSidebar: HTMLElement | null = null;
+
+  constructor(leaf: WorkspaceLeaf, plugin: LlmHubPlugin) {
+    super(leaf);
+    this.plugin = plugin;
+  }
+
+  getViewType(): string {
+    return VIEW_TYPE_GEMINI_CHAT;
+  }
+
+  getDisplayText(): string {
+    return "LLM Hub";
+  }
+
+  getIcon(): IconName {
+    return "brain-circuit";
+  }
+
+  async onOpen(): Promise<void> {
+    await Promise.resolve();
+    this.containerEl.addClass("llm-hub-chat-view");
+    const container = this.containerEl.children[1];
+    container.empty();
+    container.addClass("llm-hub-chat-container");
+
+    const root = createRoot(container);
+    root.render(
+      <TabContainer
+        ref={(ref) => {
+          this.tabContainerRef = ref;
+          if (ref) {
+            const pending = this.pendingReadingActions;
+            this.pendingReadingActions = [];
+            pending.forEach(action => action(ref));
+          }
+        }}
+        plugin={this.plugin}
+        onToggleSidebarWidth={() => this.toggleSidebarWidth()}
+      />
+    );
+    this.reactRoot = root;
+  }
+
+  async onClose(): Promise<void> {
+    // Clear selection highlight when chat view is closed
+    this.plugin.clearSelectionHighlight();
+    this.pendingReadingActions = [];
+    this.widenedSidebar?.removeClass("llm-hub-wide-sidebar");
+    this.reactRoot?.unmount();
+    this.containerEl.removeClass("llm-hub-chat-view");
+    await Promise.resolve();
+  }
+
+  private toggleSidebarWidth(): boolean {
+    const sidebar = this.containerEl.closest<HTMLElement>(
+      ".workspace-split.mod-left-split, .workspace-split.mod-right-split"
+    );
+    if (!sidebar) return false;
+    sidebar.toggleClass("llm-hub-wide-sidebar", !sidebar.hasClass("llm-hub-wide-sidebar"));
+    const isWide = sidebar.hasClass("llm-hub-wide-sidebar");
+    this.widenedSidebar = isWide ? sidebar : null;
+    window.setTimeout(() => this.leaf.onResize(), 0);
+    return isWide;
+  }
+
+  getActiveChat(): TFile | null {
+    return this.tabContainerRef?.getActiveChat() ?? null;
+  }
+
+  setActiveChat(chat: TFile | null): void {
+    this.tabContainerRef?.setActiveChat(chat);
+  }
+
+  setActiveTab(tab: TabType): void {
+    this.tabContainerRef?.setActiveTab(tab);
+  }
+
+  askSelection(selection: { text: string; sourcePath?: string }): void {
+    this.tabContainerRef?.askSelection(selection);
+  }
+
+  setChatDraft(content: string): void {
+    this.tabContainerRef?.setChatDraft(content);
+  }
+
+  searchReading(context: ReadingContext): void {
+    this.withReadingTarget(target => target.searchReading(context));
+  }
+
+  askReading(context: ReadingContext, grounded: boolean): void {
+    this.withReadingTarget(target => target.askReading(context, grounded));
+  }
+
+  private withReadingTarget(action: (target: TabContainerRef) => void): void {
+    if (this.tabContainerRef) action(this.tabContainerRef);
+    else this.pendingReadingActions.push(action);
+  }
+}

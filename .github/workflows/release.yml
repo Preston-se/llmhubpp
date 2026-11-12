@@ -1,0 +1,72 @@
+name: Draft Windows beta release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Exact x.y.z version in manifest.json'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: llmhubpp-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/build.yml
+    with:
+      release_version: ${{ inputs.version }}
+
+  release:
+    needs: build
+    if: needs.build.outputs.version == inputs.version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: llmhubpp-windows-x64
+          path: assets
+      - name: Verify assets and create draft
+        working-directory: assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_VERSION: ${{ needs.build.outputs.version }}
+          RELEASE_COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF" != refs/heads/main ]]; then
+            echo "::error::Draft releases require the exact refs/heads/main branch."
+            exit 1
+          fi
+          zip="llmhubpp-${RELEASE_VERSION}-windows-x64.zip"
+          if [[ ! -s "$zip" || ! -s SHA256SUMS.txt ]]; then
+            echo "::error::The Windows ZIP or SHA256SUMS.txt is missing."
+            exit 1
+          fi
+          actual=$(sha256sum --binary "$zip")
+          if [[ "${actual%% *}  $zip" != "$(cat SHA256SUMS.txt)" ]]; then
+            echo "::error::The Windows ZIP does not match SHA256SUMS.txt."
+            exit 1
+          fi
+          refs=$(gh api "repos/$GH_REPO/git/matching-refs/tags/$RELEASE_VERSION" --jq '.[].ref')
+          if grep -Fxq "refs/tags/$RELEASE_VERSION" <<< "$refs"; then
+            echo "::error::Tag $RELEASE_VERSION already exists. Use a new version for a new release."
+            exit 1
+          fi
+          releases=$(gh api --paginate "repos/$GH_REPO/releases" --jq '.[].tag_name')
+          if grep -Fxq "$RELEASE_VERSION" <<< "$releases"; then
+            echo "::error::A release or draft already uses $RELEASE_VERSION. Inspect it under Releases before retrying."
+            exit 1
+          fi
+          gh release create "$RELEASE_VERSION" "$zip" SHA256SUMS.txt \
+            --target "$RELEASE_COMMIT" --draft --prerelease \
+            --title "Llmhub++ $RELEASE_VERSION (Beta)" --generate-notes

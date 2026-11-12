@@ -1,0 +1,89 @@
+// Render workflow code blocks as Mermaid diagrams.
+// Uses the mermaid npm package directly for reliable rendering.
+// In Live Preview, Obsidian natively toggles between rendered output (cursor outside)
+// and raw YAML source (cursor inside).
+
+import type { Plugin } from "obsidian";
+import { sidebarNodesToMermaid } from "src/workflow/workflowToMermaid";
+import { loadFromCodeBlock } from "src/workflow/codeblockSync";
+import { enqueueMermaidRender } from "src/ui/mermaidRender";
+
+function parseAndConvert(yamlSource: string): string | null {
+  try {
+    const wrapped = "```hub-workflow\n" + yamlSource + "\n```";
+    const result = loadFromCodeBlock(wrapped);
+    if (!result.data || result.data.nodes.length === 0) return null;
+    return sidebarNodesToMermaid(result.data.nodes);
+  } catch (e) {
+    console.error("LLM Hub: Failed to parse workflow for mermaid:", e);
+    return null;
+  }
+}
+
+function isDarkMode(): boolean {
+  return document.body.classList.contains("theme-dark");
+}
+
+export function registerWorkflowCodeBlockProcessor(plugin: Plugin): void {
+  const processor = (source: string, el: HTMLElement) => {
+    try {
+      const chart = parseAndConvert(source);
+      if (!chart) {
+        el.textContent = "No workflow nodes";
+        return;
+      }
+
+      el.addClass("llm-hub-workflow-mermaid");
+      el.textContent = "Rendering diagram…";
+
+      let cancelled = false;
+      // Clean up on unload to cancel in-flight renders
+      const unloadHandler = () => { cancelled = true; };
+      // Use MutationObserver to detect removal from DOM
+      const observer = new MutationObserver(() => {
+        if (!el.isConnected) {
+          cancelled = true;
+          observer.disconnect();
+        }
+      });
+      observer.observe(el.parentElement || document.body, { childList: true, subtree: true });
+
+      void enqueueMermaidRender(
+        { chart, isDark: isDarkMode() },
+        () => cancelled,
+      ).then((svg) => {
+        observer.disconnect();
+        if (svg && !cancelled && el.isConnected) {
+          el.empty();
+          // Parse as text/html to tolerate HTML void elements (<br> etc.)
+          // inside foreignObject that strict XML parsing rejects on mobile
+          const doc = new DOMParser().parseFromString(svg, "text/html");
+          const svgEl = doc.querySelector("svg");
+
+          if (svgEl) {
+            el.appendChild(el.doc.importNode(svgEl, true));
+          }
+        }
+      }).catch((e) => {
+        observer.disconnect();
+        if (!cancelled && el.isConnected) {
+          console.error("LLM Hub: Failed to render mermaid:", e);
+          el.textContent = "Failed to render workflow diagram";
+        }
+      });
+
+      // Also cancel on plugin unload
+      plugin.register(unloadHandler);
+    } catch (e) {
+      console.error("LLM Hub: Failed to render workflow code block:", e);
+      el.textContent = "Failed to render workflow diagram";
+    }
+  };
+
+  // `workflow` is the original/sidebar-compatible fence name, while
+  // `hub-workflow` is used by newer generated files. Keep both aliases wired
+  // to the exact same renderer so changing the fence does not change which
+  // plugin features are available.
+  plugin.registerMarkdownCodeBlockProcessor("workflow", processor);
+  plugin.registerMarkdownCodeBlockProcessor("hub-workflow", processor);
+}

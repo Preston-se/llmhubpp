@@ -1,0 +1,2 @@
+import {it,expect} from 'vitest';import {TaskManager} from '../../core/taskManager';import {updateShellProgress} from './shell';
+it('retains the publication cursor when the script acknowledges pause',()=>{const task=new TaskManager().create('convert');updateShellProgress(task,'发布文档分段',1,10,'part-1.md');task.pause();updateShellProgress(task,'已暂停',0,0,'等待继续');expect(task.snapshot).toMatchObject({status:'paused',stage:'发布文档分段',completed:1,total:10,detail:'part-1.md'});});

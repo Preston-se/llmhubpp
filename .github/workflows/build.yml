@@ -1,0 +1,66 @@
+name: Build and test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+    inputs:
+      release_version:
+        type: string
+        required: true
+    outputs:
+      version:
+        value: ${{ jobs.build.outputs.version }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    outputs:
+      version: ${{ steps.package.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run lint -- --max-warnings 0
+      - name: Run regression suite
+        shell: pwsh
+        run: |
+          $gitBin = Join-Path $env:ProgramFiles 'Git/usr/bin'
+          if (Test-Path (Join-Path $gitBin 'openssl.exe')) {
+            $env:PATH = "$gitBin;$env:PATH"
+          }
+          npm test -- --maxWorkers=1
+      - run: npm run build
+      - run: npm run test:package
+      - name: Package Windows ZIP
+        id: package
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+        run: |
+          $packArgs = @()
+          if ($env:RELEASE_VERSION) {
+            $packArgs = @('--tag', $env:RELEASE_VERSION)
+          }
+          $result = node scripts/package-unified.mjs @packArgs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $artifact = $result | ConvertFrom-Json
+          "version=$($artifact.version)" >> $env:GITHUB_OUTPUT
+          "zip=$($artifact.zip)" >> $env:GITHUB_OUTPUT
+          "checksum=$($artifact.checksum)" >> $env:GITHUB_OUTPUT
+      - uses: actions/upload-artifact@v4
+        with:
+          name: llmhubpp-windows-x64
+          if-no-files-found: error
+          path: |
+            ${{ steps.package.outputs.zip }}
+            ${{ steps.package.outputs.checksum }}

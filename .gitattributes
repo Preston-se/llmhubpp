@@ -1,0 +1,9 @@
+# The release archive preserves these inputs byte-for-byte across checkouts.
+/LICENSE -text whitespace=cr-at-eol
+/NOTICE.md -text
+/manifest.json -text
+/package-lock.json -text
+/styles.source.css -text whitespace=cr-at-eol
+/src/safeguard/runtime.js -text
+/resources/** -text
+/vendor/** -text

@@ -1,0 +1,399 @@
+[
+  {
+    "id": "settings:api",
+    "userTopic": "first-setup",
+    "mcp": {
+      "fields": [
+        "settings.apiProviders"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:local",
+    "userTopic": "first-setup",
+    "mcp": {
+      "fields": [
+        "settings.localLlmConfigs"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:cli",
+    "userTopic": "first-setup",
+    "mcp": {
+      "fields": [
+        "settings.cliConfig"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:proxy",
+    "userTopic": "first-setup",
+    "mcp": {
+      "fields": [
+        "settings.proxyUrl",
+        "settings.proxyBypass"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:credentials",
+    "userTopic": "first-setup",
+    "mcp": {
+      "fields": [
+        "settings.credentialStorage"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:rag",
+    "userTopic": "retrieval",
+    "mcp": {
+      "fields": [
+        "workspace.ragSettings",
+        "settings.ragIndexIdleSeconds",
+        "settings.ragContinueAfterClose"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:jev",
+    "userTopic": "retrieval",
+    "mcp": {
+      "fields": [
+        "settings.jevRagFilterEnabled"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:okf",
+    "userTopic": "retrieval",
+    "mcp": {
+      "fields": [
+        "settings.knowledgeSources"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:source",
+    "userTopic": "sources",
+    "mcp": {
+      "fields": [
+        "settings.sourceWatch"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:menus",
+    "userTopic": "customization",
+    "mcp": {
+      "fields": [
+        "settings.readingMenus"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:hotkeys",
+    "userTopic": "customization",
+    "mcp": {
+      "fields": [
+        "hotkeys.bindings"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:chat",
+    "userTopic": "customization",
+    "mcp": {
+      "fields": [
+        "settings.voiceChat",
+        "settings.groundedAnswersByDefault"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:history",
+    "userTopic": "customization",
+    "mcp": {
+      "fields": [
+        "settings.saveChatHistory"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:requests",
+    "userTopic": "requests",
+    "mcp": {
+      "fields": [
+        "settings.requestControls"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:workspace",
+    "userTopic": "permissions",
+    "mcp": {
+      "fields": [
+        "settings.cloudVaultToolAllowedFolders"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:safeGuard",
+    "userTopic": "permissions",
+    "mcp": {
+      "fields": [
+        "safeGuard.enabled"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:storage",
+    "userTopic": "storage",
+    "mcp": {
+      "fields": [
+        "settings.storageLayout"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:workflow",
+    "userTopic": "workflows",
+    "mcp": {
+      "fields": [
+        "settings.enabledWorkflowEventTriggers"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:slash",
+    "userTopic": "workflows",
+    "mcp": {
+      "fields": [
+        "settings.slashCommands"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:externalSkills",
+    "userTopic": "workflows",
+    "mcp": {
+      "fields": [
+        "settings.activeSkillPaths"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:mcp",
+    "userTopic": "workflows",
+    "mcp": {
+      "fields": [
+        "settings.mcpServers",
+        "settings.mcpServers.*.allowedTools"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:agent",
+    "userTopic": "workflows",
+    "mcp": {
+      "fields": [
+        "settings.agentPlugins"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:edits",
+    "userTopic": "workflows",
+    "mcp": {
+      "fields": [
+        "settings.editHistory"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:encryption",
+    "userTopic": "workflows",
+    "mcp": {
+      "fields": [
+        "settings.encryption"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:langfuse",
+    "userTopic": "workflows",
+    "mcp": {
+      "fields": [
+        "settings.langfuse"
+      ],
+      "tools": []
+    }
+  },
+  {
+    "id": "settings:assistant",
+    "userTopic": "mcp-agent-guide",
+    "mcp": {
+      "fields": [],
+      "tools": [
+        "configuration_status",
+        "configuration_describe"
+      ]
+    }
+  },
+  {
+    "id": "settings:transfer",
+    "userTopic": "configuration-backup",
+    "mcp": {
+      "fields": [],
+      "tools": [
+        "configuration_export",
+        "configuration_import_preview"
+      ]
+    }
+  },
+  {
+    "id": "settings:precision",
+    "userTopic": "configuration-fields",
+    "mcp": {
+      "fields": [],
+      "tools": [
+        "configuration_describe",
+        "configuration_preview"
+      ]
+    }
+  },
+  {
+    "id": "settings:help",
+    "userTopic": "index",
+    "mcp": {
+      "fields": [],
+      "tools": [
+        "configuration_describe"
+      ],
+      "boundary": "Wiki 阅读由本机界面提供，Agent 通过配置字段帮助资源获取同源说明。"
+    }
+  },
+  {
+    "id": "chat-citations",
+    "userTopic": "grounded-answers",
+    "mcp": {
+      "fields": [],
+      "tools": [],
+      "boundary": "引用窗口与原文跳转属于当前阅读交互，不通过配置 MCP 执行正文操作。"
+    }
+  },
+  {
+    "id": "chat-images-navigation",
+    "userTopic": "grounded-answers",
+    "mcp": {
+      "fields": [],
+      "tools": [],
+      "boundary": "聊天界面将草稿和文件选择归给原会话。附件上传、长对话跳转和推理由聊天入口执行，配置不授权这些操作。"
+    }
+  },
+  {
+    "id": "document-index-lifecycle",
+    "userTopic": "retrieval",
+    "mcp": {
+      "fields": [
+        "workspace.ragSettings.*.autoUpdateIndex"
+      ],
+      "tools": [
+        "configuration_status"
+      ],
+      "boundary": "自动更新的偏好可配置；检查、修复、同步和重建是单独授权的内容任务。"
+    }
+  },
+  {
+    "id": "task-center",
+    "userTopic": "retrieval",
+    "mcp": {
+      "fields": [],
+      "tools": [
+        "configuration_status"
+      ],
+      "boundary": "配置 MCP 提供指定知识库的队列摘要；笔记队列详情、暂停、继续和取消在本机任务中心。"
+    }
+  },
+  {
+    "id": "parsing-quality",
+    "userTopic": "sources",
+    "mcp": {
+      "fields": [
+        "settings.sourceWatch"
+      ],
+      "tools": [],
+      "boundary": "解析配置可查询；真实转换、OCR 与质量验收是单独执行任务。"
+    }
+  },
+  {
+    "id": "long-document-reading",
+    "userTopic": "reading",
+    "mcp": {
+      "fields": [
+        "settings.maxNoteChars"
+      ],
+      "tools": [],
+      "boundary": "分段读取及续读属于内容工具执行，配置 MCP 不读取或发送资料正文。"
+    }
+  },
+  {
+    "id": "setup-guidance",
+    "userTopic": "agent-onboarding",
+    "mcp": {
+      "fields": [],
+      "tools": [
+        "configuration_status",
+        "configuration_repair"
+      ],
+      "boundary": "问题、条件推荐和保留策略为引导，只有明确授权后才调用预览应用。"
+    }
+  },
+  {
+    "id": "protection-exception-choice",
+    "userTopic": "requests",
+    "mcp": {
+      "fields": [],
+      "tools": [],
+      "boundary": "保护范围不足时由本机用户首次选择，按服务、模型、问题与保护设置记住。配置 MCP 不代替授权。附件外发例外保留费用限制，费用范围例外记为未知且处于硬预算范围之外。"
+    }
+  },
+  {
+    "id": "risk-runtime-reload",
+    "userTopic": "permissions",
+    "mcp": {
+      "fields": [],
+      "tools": [
+        "configuration_reload",
+        "configuration_apply",
+        "configuration_verify"
+      ],
+      "boundary": "受限运行时应用保持配置 MCP；不能在线应用的项目必须本地操作。"
+    }
+  }
+]

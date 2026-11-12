@@ -1,0 +1,79 @@
+{
+  "name": "llmhubpp",
+  "private": true,
+  "version": "1.261112.1",
+  "description": "Desktop Obsidian plugin for chat, vault retrieval, workflows, and Safe Guard.",
+  "main": "main.js",
+  "scripts": {
+    "generate:builtin-okf": "node scripts/generate-builtin-okf.mjs",
+    "generate:settings-search": "node scripts/generate-settings-search.mjs",
+    "dev": "npm run generate:builtin-okf && node esbuild.config.mjs",
+    "dev:langfuse": "npm run generate:builtin-okf && node esbuild.config.mjs langfuse",
+    "build": "npm run generate:builtin-okf && npm run generate:settings-search && npm run check:docs-mcp && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "build:llmhubpp": "npm run build",
+    "build:legacy": "npm run generate:builtin-okf && npm run check:docs-mcp && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production legacy",
+    "package:llmhubpp": "npm run build && node scripts/package-unified.mjs",
+    "test:package": "node --test scripts/package-preview.test.mjs scripts/package-unified.test.mjs",
+    "build:langfuse": "npm run generate:builtin-okf && npm run check:docs-mcp && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production langfuse",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "preversion": "node version-bump.mjs --check-next && npm run lint && npm run build",
+    "version": "node version-bump.mjs",
+    "generate:configuration": "node scripts/generate-configuration-schema.mjs && node scripts/generate-configuration-docs.mjs",
+    "check:docs-mcp": "npm run generate:configuration && node scripts/check-docs-mcp.mjs && node --test scripts/help-links.test.mjs scripts/docs-mcp-contracts.test.mjs && node node_modules/vitest/vitest.mjs run src/configuration/mcp/discovery.test.ts src/configuration/probe.test.ts src/configuration/checks.test.ts"
+  },
+  "keywords": [
+    "obsidian",
+    "obsidian-plugin",
+    "gemini",
+    "ai",
+    "rag"
+  ],
+  "author": "Llmhub++ contributors (original author: takeshy)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Preston-se/llmhubpp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Preston-se/llmhubpp/issues"
+  },
+  "devDependencies": {
+    "@codemirror/state": "6.5.0",
+    "@codemirror/view": "6.38.6",
+    "@eslint/json": "^0.14.0",
+    "@types/diff": "^7.0.2",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "ajv": "6.15.0",
+    "esbuild": "^0.28.1",
+    "eslint-plugin-obsidianmd": "^0.4.2",
+    "langfuse": "^3.38.6",
+    "obsidian": "^1.13.1",
+    "tslib": "^2.4.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.49.0",
+    "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
+    "@google/genai": "^2.13.0",
+    "diff": "^8.0.2",
+    "fflate": "^0.8.3",
+    "lucide-react": "^0.503.0",
+    "obsidian-llm-hub-common": "file:vendor/obsidian-llm-hub-common-0.1.3.tgz",
+    "openai": "^6.32.0",
+    "pdf-lib": "^1.17.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "optionalDependencies": {
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
+    "node-pty": "1.1.0"
+  },
+  "overrides": {
+    "moment": "2.31.0"
+  }
+}

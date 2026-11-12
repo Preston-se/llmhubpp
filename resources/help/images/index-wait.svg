@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 268" role="img" aria-labelledby="title desc">
+  <title id="title">笔记独立等待后更新索引</title>
+  <desc id="desc">A 在十点保存，十点十分到期。B 在十点零二分保存，十点十二分到期。右下角任务中心显示各篇笔记的等待状态。</desc>
+  <rect width="640" height="268" rx="14" fill="#19292f"/>
+  <g font-family="Segoe UI, Microsoft YaHei, sans-serif" fill="#f2f7f8">
+    <text x="24" y="39" font-size="23" font-weight="600">每篇笔记独立等待 10 分钟</text>
+    <text x="24" y="90" font-size="18">笔记 A</text><text x="118" y="90" font-size="16">10:00 保存</text><text x="464" y="90" font-size="16">10:10 可更新</text>
+    <text x="24" y="143" font-size="18">笔记 B</text><text x="164" y="143" font-size="16">10:02 保存</text><text x="510" y="143" font-size="16">10:12 可更新</text>
+    <text x="24" y="211" font-size="16" fill="#c4d6dc">关闭最后一个页签时，可以更新、继续等待或保留原索引。</text>
+    <text x="24" y="240" font-size="16" fill="#c4d6dc">点右下角任务状态，查看每篇笔记的等待与执行结果。</text>
+  </g>
+  <g stroke="#73d9cb" stroke-width="3" fill="#73d9cb">
+    <path d="M122 105H476 M168 158H522"/><circle cx="122" cy="105" r="4"/><circle cx="476" cy="105" r="4"/>
+    <circle cx="168" cy="158" r="4"/><circle cx="522" cy="158" r="4"/>
+  </g>
+</svg>
