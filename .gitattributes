@@ -7,3 +7,6 @@
 /src/safeguard/runtime.js -text
 /resources/** -text
 /vendor/** -text
+
+# The settings catalogue generator compares its LF output byte-for-byte.
+/src/ui/settings/settingsSearchCatalog.ts text eol=lf
