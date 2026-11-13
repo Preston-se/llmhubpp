@@ -73,6 +73,12 @@ const englishRiskByPath: Record<string, string> = {
     'settings.requestControls.redactionRules': 'Changing active redaction rules can allow previously redacted text to be sent.',
 };
 
+const englishWarnings: Partial<Record<string, string>> = {
+    REINDEX_REQUIRED: 'Embedding or chunk settings changed. Review what to update before rebuilding the existing index.',
+    DANGLING_MODEL_REFERENCE: 'The saved model selection is unavailable.',
+    MODEL_NEEDS_CHECK: 'The selected model has not been verified.',
+};
+
 type PreviewDisplay = Pick<ConfigPreview, 'changes' | 'risks'> & Partial<Pick<ConfigPreview, 'issues' | 'warnings' | 'reloadRequired'>>;
 
 export function configurationPreviewText(preview: PreviewDisplay): string {
@@ -83,9 +89,9 @@ export function configurationPreviewText(preview: PreviewDisplay): string {
             'This change affects access, automation, or an executable setting. Review the changed value and field guidance before applying.';
         return { ...risk, reason: tr(english, risk.reason) };
     });
-    const warnings = preview.warnings?.map(warning => warning.code === "REINDEX_REQUIRED" ? {
-        ...warning,
-        message: tr("Embedding or chunk settings changed. The existing index is kept. Review what to update before rebuilding.", warning.message),
-    } : warning);
+    const warnings = preview.warnings?.map(warning => {
+        const english = englishWarnings[warning.code];
+        return english ? { ...warning, message: tr(english, warning.message) } : warning;
+    });
     return JSON.stringify({ ...preview, risks, warnings }, null, 2);
 }

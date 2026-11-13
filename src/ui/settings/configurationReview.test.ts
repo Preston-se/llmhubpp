@@ -23,9 +23,10 @@ vi.mock('obsidian',async original=>{
 import {ConfigurationEditorModal} from './ConfigurationEditorModal';
 import {configurationFixture} from '../../configuration/configurationFixture.test-utils';
 beforeEach(()=>{setLocale("zh-CN");h.controls=[];h.pre=[];});
-async function preview(locale = "zh-CN"){
+async function preview(locale = "zh-CN", selectedModel?: string){
  setLocale(locale);
  const f=configurationFixture();f.raw.safeGuard.enabled=true;
+ if (selectedModel) f.raw.workspace.selectedModel = selectedModel;
  const modal=new ConfigurationEditorModal({app:{},configuration:{service:f.service,trackModal:()=>{}}} as any,'safeGuard');modal.onOpen();
  await vi.waitFor(()=>expect(h.controls.some(item=>item.type==='textarea')).toBe(true));
  h.controls.find(item=>item.type==='textarea').control.change('false');
@@ -42,4 +43,14 @@ it('lets the explicit native apply button submit the same reviewed risk acknowle
 it('explains the Safe Guard risk in an English preview', async () => {
  await preview('en-US');
  expect(h.pre.at(-1).text).toContain('Safe Guard checks will be disabled for requests sent through the proxy.');
+});
+
+it.each([
+  ["api:missing:model", "DANGLING_MODEL_REFERENCE", "The saved model selection is unavailable."],
+  ["api:a:model", "MODEL_NEEDS_CHECK", "The selected model has not been verified."],
+])("explains a saved model warning in the English preview (%s)", async (model, code, message) => {
+ await preview("en-US", model);
+ expect(JSON.parse(h.pre.at(-1).text).warnings).toEqual([
+  expect.objectContaining({ code, message, path: "workspace.selectedModel" }),
+ ]);
 });

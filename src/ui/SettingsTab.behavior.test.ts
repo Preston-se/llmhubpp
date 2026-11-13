@@ -124,3 +124,21 @@ it.each([
   tab.openSection("help");
   expect(all(ui.modals.at(-1).contentEl).map(item => item.textContent)).toContain(wiki);
 });
+
+it.each([
+  ["en-US", "MCP 操作指南", "MCP guide"],
+  ["zh-CN", "MCP guide", "MCP 操作指南"],
+])("localizes a saved built-in label in a mixed link list (%s)", (locale, savedLabel, expected) => {
+  setLocale(locale);
+  const { tab, plugin } = fixture();
+  plugin.settings.settingsAppearance.helpLinks = [
+    { id: "custom", target: "https://example.invalid", label: "My notes" },
+    { id: "mcp", target: "help:mcp-agent-guide", label: savedLabel },
+    { id: "notice", target: "help:user-notice", label: "User notes", hidden: true },
+  ];
+  const home = new Element();
+  (tab.getSettingDefinitions()[0] as any).render({ settingEl: home });
+  expect(all(home).filter(element => element.textContent.endsWith(" ↗")).slice(0, 2).map(element => element.textContent)).toEqual(["My notes ↗", expected + " ↗"]);
+  expect(all(home).some(element => element.textContent === "User notes ↗" || element.textContent === "用户须知 ↗")).toBe(false);
+  expect(plugin.settings.settingsAppearance.helpLinks[1].label).toBe(savedLabel);
+});

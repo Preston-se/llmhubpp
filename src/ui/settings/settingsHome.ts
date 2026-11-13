@@ -2,7 +2,7 @@ import { settingsText as tr } from "./settingsText";
 import { Modal, Notice, Setting } from 'obsidian';
 import type { SettingsContext } from './settingsContext';
 import { settingsGroups, type SettingSection } from './settingsRegistry';
-import { defaultHelpLinks, resolveHelpLink } from './helpLinks';
+import { defaultHelpLinks, helpLinkLabel, resolveHelpLink } from './helpLinks';
 import { HelpModal } from '../HelpModal';
 import { ConfigurationTransferModal } from './ConfigurationTransferModal';
 import { displayAgentConfigurationSettings } from './agentConfigurationSettings';
@@ -11,7 +11,7 @@ function manageLinks(ctx: SettingsContext, refresh: () => void): void {
     ctx={...ctx,plugin:ctx.plugin.configuration?.createUiFacade(ctx.plugin)??ctx.plugin};
     const modal = ctx.plugin.configuration?.trackModal(new Modal(ctx.plugin.app)) ?? new Modal(ctx.plugin.app);
     modal.setTitle(tr("Manage home links", '管理首页链接'));
-    const links = structuredClone(ctx.plugin.settings.settingsAppearance?.helpLinks ?? defaultHelpLinks());
+    const links = (ctx.plugin.settings.settingsAppearance?.helpLinks ?? defaultHelpLinks()).map(link => ({ ...link, label: helpLinkLabel(link) }));
     const render = () => {
         modal.contentEl.empty();
         for (const [index, link] of links.entries())
@@ -52,7 +52,7 @@ export function renderSettingsHome(root: HTMLElement, ctx: SettingsContext, rend
         for (const link of ctx.plugin.settings.settingsAppearance?.helpLinks ?? defaultHelpLinks()) {
             if (link.hidden)
                 continue;
-            const button = links.createEl('button', { text: link.label + ' ↗', cls: 'clickable-icon' });
+            const button = links.createEl('button', { text: helpLinkLabel(link) + ' ↗', cls: 'clickable-icon' });
             button.addEventListener('click', () => { try {
                 const resolved = resolveHelpLink(link.target);
                 if (resolved.kind === 'help')
