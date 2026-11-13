@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.261112.2
+
+- Localize settings in Simplified Chinese and English, including shared index controls, the settings home, configuration dialogs, and Safe Guard settings.
+- Use Obsidian’s language for built-in help labels and keep custom names as entered.
+- Add a Chinese repository home, an English README, illustrated setup and indexing flows, and a repeatable development and release guide.
+
+
 ## 1.261112.1 · First Windows x64 beta
 
 - Unified desktop build packages the offline Wiki, Safe Guard, editable Inbox preset, and Windows terminal runtime.
