@@ -32,6 +32,12 @@ export async function downloadAssets({ version, dir, gh }) {
   ]);
 }
 
+export async function readRelease({ version, repository, gh }) {
+  const release = JSON.parse(await gh(['release', 'view', version, '--json', 'isDraft,isPrerelease,tagName']));
+  assert.equal(release.tagName, version, 'Unexpected release tag');
+  return release;
+}
+
 export async function runPromotion({ root, assetsDir, version, repository, promote = false, gh }) {
   const acceptancePath = path.join(root, 'docs', 'releases', `${version}.json`);
   let acceptance;
@@ -42,9 +48,8 @@ export async function runPromotion({ root, assetsDir, version, repository, promo
     throw error;
   }
 
-  // A draft has no tag ref yet, so read the release state before resolving the tag.
-  const release = JSON.parse(await gh(['release', 'view', version, '--json', 'isDraft,isPrerelease,tagName']));
-  assert.equal(release.tagName, version, 'Unexpected release tag');
+  // A draft has no published tag, so read the release state before resolving the tag.
+  const release = await readRelease({ version, repository, gh });
   assert.equal(release.isDraft, false, `${version} is still a draft release`);
 
   const tagCommit = (await gh(['api', `repos/${repository}/git/ref/tags/${version}`, '--jq', '.object.sha'])).trim();
@@ -109,6 +114,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     ? path.resolve(values.assets)
     : path.join(root, 'dist', 'promotion', version, 'assets');
   const gh = createGh({ repository });
+  // A draft has nothing published to download, and gh cannot fetch it by tag.
+  const release = await readRelease({ version, repository, gh });
+  assert.equal(release.isDraft, false, `${version} is still a draft release; publish it before checking promotion`);
   // Published assets are the default source. --assets only replays files already fetched.
   if (!values.assets) await downloadAssets({ version, dir: assetsDir, gh });
   const result = await runPromotion({
