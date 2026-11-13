@@ -33,8 +33,10 @@ export async function downloadAssets({ version, dir, gh }) {
 }
 
 export async function readRelease({ version, repository, gh }) {
-  const release = JSON.parse(await gh(['release', 'view', version, '--json', 'isDraft,isPrerelease,tagName']));
-  assert.equal(release.tagName, version, 'Unexpected release tag');
+  // `gh release view` cannot resolve a draft by tag, so list releases and look for the version.
+  const releases = JSON.parse(await gh(['release', 'list', '--json', 'tagName,isDraft,isPrerelease', '--limit', '100']));
+  const release = releases.find(entry => entry.tagName === version);
+  if (!release) throw new Error(`No release or draft uses ${version}`);
   return release;
 }
 
@@ -78,7 +80,7 @@ export async function runPromotion({ root, assetsDir, version, repository, promo
   let promoted = false;
   if (promote) {
     await gh(['release', 'edit', version, '--prerelease=false', '--latest']);
-    const after = JSON.parse(await gh(['release', 'view', version, '--json', 'isDraft,isPrerelease,tagName']));
+    const after = await readRelease({ version, repository, gh });
     if (after.isPrerelease) throw new Error(`${version} is still a prerelease after promotion`);
     promoted = true;
   }

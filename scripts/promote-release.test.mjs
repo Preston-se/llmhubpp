@@ -52,10 +52,13 @@ async function workspace() {
   return { root, assetsDir, acceptance, zipSha256: hash(zip) };
 }
 
+const releaseListKey = 'release list --json tagName,isDraft,isPrerelease --limit 100';
+const releaseList = (...entries) => JSON.stringify(entries);
+
 function fakeGh({ overrides = {}, log = [] } = {}) {
   const defaults = {
     [`api repos/${repository}/git/ref/tags/${version} --jq .object.sha`]: commit,
-    [`release view ${version} --json isDraft,isPrerelease,tagName`]: JSON.stringify({ isDraft: false, isPrerelease: true, tagName: version }),
+    [releaseListKey]: releaseList({ isDraft: false, isPrerelease: true, tagName: version }),
     [`api repos/${repository}/actions/runs/4242 --jq .conclusion + " " + .head_sha`]: `success ${commit}`,
   };
   const table = { ...defaults, ...overrides };
@@ -114,10 +117,10 @@ test('a read-only check reports readiness and never edits the release', async ()
 
 test('an explicit promotion edits only the existing release', async () => {
   const ws = await workspace();
-  const view = () => JSON.stringify({ isDraft: false, isPrerelease: false, tagName: version });
+  let stable = false;
   const { gh, log } = fakeGh({ overrides: {
-    [`release view ${version} --json isDraft,isPrerelease,tagName`]: view,
-    [`release edit ${version} --prerelease=false --latest`]: '',
+    [releaseListKey]: () => releaseList({ isDraft: false, isPrerelease: !stable, tagName: version }),
+    [`release edit ${version} --prerelease=false --latest`]: () => { stable = true; return ''; },
   } });
   try {
     const result = await runPromotion({ root: ws.root, assetsDir: ws.assetsDir, version, repository, gh, promote: true });
@@ -135,7 +138,7 @@ test('the command line checks already-downloaded assets without touching the rel
   const shim = path.join(ws.root, 'gh-shim.mjs');
   await writeFile(shim, `const args = process.argv.slice(2);
 const out = value => process.stdout.write(typeof value === 'string' ? value : JSON.stringify(value));
-if (args[0] === 'release' && args[1] === 'view') out({ isDraft: false, isPrerelease: true, tagName: args[2] });
+if (args[0] === 'release' && args[1] === 'list') out([{ isDraft: false, isPrerelease: true, tagName: '${version}' }]);
 else if (args[0] === 'release' && args[1] === 'edit') out('');
 else if (args[0] === 'api' && args[1].includes('/git/ref/tags/')) out('${commit}');
 else if (args[0] === 'api' && args[1].includes('/actions/runs/')) out('success ${commit}');
@@ -162,8 +165,8 @@ test('the command line refuses a draft before downloading anything', async () =>
   const ws = await workspace();
   const shim = path.join(ws.root, 'gh-draft-shim.mjs');
   await writeFile(shim, `const args = process.argv.slice(2);
-if (args[0] === 'release' && args[1] === 'view') {
-  process.stdout.write(JSON.stringify({ isDraft: true, isPrerelease: true, tagName: args[2] }));
+if (args[0] === 'release' && args[1] === 'list') {
+  process.stdout.write(JSON.stringify([{ isDraft: true, isPrerelease: true, tagName: '${version}' }]));
 } else {
   process.stderr.write('unexpected gh call: ' + args.join(' '));
   process.exitCode = 2;
@@ -185,8 +188,7 @@ if (args[0] === 'release' && args[1] === 'view') {
 test('reports a draft release before looking up its missing tag', async () => {
   const ws = await workspace();
   const { gh, log } = fakeGh({ overrides: {
-    [`release view ${version} --json isDraft,isPrerelease,tagName`]:
-      JSON.stringify({ isDraft: true, isPrerelease: true, tagName: version }),
+    [releaseListKey]: releaseList({ isDraft: true, isPrerelease: true, tagName: version }),
   } });
   try {
     await assert.rejects(
@@ -261,7 +263,7 @@ for (const [name, mutate, pattern] of [
       overrides[`api repos/${repository}/actions/runs/4242 --jq .conclusion + " " + .head_sha`] = `failure ${commit}`;
     }
     if (name === 'a release that is still a draft') {
-      overrides[`release view ${version} --json isDraft,isPrerelease,tagName`] = JSON.stringify({ isDraft: true, isPrerelease: true, tagName: version });
+      overrides[releaseListKey] = releaseList({ isDraft: true, isPrerelease: true, tagName: version });
     }
     const { gh, log } = fakeGh({ overrides });
     try {
