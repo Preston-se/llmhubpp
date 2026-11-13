@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "version": "1.261113.1",
+  "commit": "0000000000000000000000000000000000000000",
+  "zipSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "anonymousDownloadSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "reviewer": "",
+  "testedAt": "2026-11-13",
+  "evidence": "",
+  "isolatedVault": true,
+  "blockers": ["fill the real evidence before promotion"],
+  "rollbackVersion": "1.261112.2",
+  "environments": [
+    {
+      "os": "Windows 10",
+      "arch": "x64",
+      "obsidian": "1.15.0",
+      "checks": {
+        "install": "pending",
+        "taskCenter": "pending",
+        "indexing": "pending",
+        "searchAuthorization": "pending",
+        "configuration": "pending",
+        "localModels": "pending",
+        "customizations": "pending",
+        "upgrade": "pending",
+        "rollback": "pending"
+      }
+    }
+  ]
+}

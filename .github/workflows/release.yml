@@ -48,8 +48,8 @@ jobs:
             exit 1
           fi
           zip="llmhubpp-${RELEASE_VERSION}-windows-x64.zip"
-          if [[ ! -s "$zip" || ! -s SHA256SUMS.txt ]]; then
-            echo "::error::The Windows ZIP or SHA256SUMS.txt is missing."
+          if [[ ! -s "$zip" || ! -s SHA256SUMS.txt || ! -s build-report.json ]]; then
+            echo "::error::The ZIP, checksum, or build report is missing."
             exit 1
           fi
           actual=$(sha256sum --binary "$zip")
@@ -67,6 +67,6 @@ jobs:
             echo "::error::A release or draft already uses $RELEASE_VERSION. Inspect it under Releases before retrying."
             exit 1
           fi
-          gh release create "$RELEASE_VERSION" "$zip" SHA256SUMS.txt \
+          gh release create "$RELEASE_VERSION" "$zip" SHA256SUMS.txt build-report.json \
             --target "$RELEASE_COMMIT" --draft --prerelease \
             --title "Llmhub++ $RELEASE_VERSION (Beta)" --generate-notes

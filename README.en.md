@@ -36,6 +36,9 @@
 > [!NOTE]
 > The beta package targets Windows x64. The manifest requires Obsidian 1.13.0 or later. Native testing used Windows 10 x64 and Obsidian 1.15.0. Windows 11 and the minimum Obsidian version still need native verification. The offline Wiki articles are in Chinese.
 
+> [!IMPORTANT]
+> Everything published so far is a beta. A stable release is promoted from a beta that has already been accepted, with the same files and the same checksums. Until then, the newest prerelease is the version to use. [Release and promotion](docs/RELEASING.md) · [Acceptance checks](docs/RELEASE_ACCEPTANCE.md)
+
 ## Try it with a note
 
 ![Connect a text model, select an index, ask about a note, and open a citation](docs/images/readme/ask-with-citations.svg)

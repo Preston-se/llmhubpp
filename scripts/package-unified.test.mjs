@@ -64,6 +64,11 @@ test('Windows ZIP contains the exact default build and the offline install asset
   const run = pack('--tag', manifest.version);
   assert.equal(run.status, 0, run.stderr);
   const result = JSON.parse(run.stdout);
+  assert.equal(typeof result.report, 'string', 'packaging returns a portable release report');
+  const report = JSON.parse(await readFile(result.report, 'utf8'));
+  assert.equal(report.schemaVersion, 1);
+  assert.equal(report.platform, 'windows-x64');
+  assert.equal(report.zipName, path.basename(result.zip));
   const archive = await readFile(result.zip);
   const entries = unzipSync(archive);
   const installed = name => Buffer.from(entries['llmhubpp/' + name]);

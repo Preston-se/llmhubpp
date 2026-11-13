@@ -1,0 +1,73 @@
+name: Check or promote Windows stable release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Existing beta version with docs/releases/<version>.json acceptance'
+        required: true
+        type: string
+      publish:
+        description: 'Promote the verified beta to stable (false = read-only check)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: llmhubpp-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.check.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Verify published candidate and acceptance
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node scripts/promote-release.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: promotion-check
+          path: dist/promotion/verification.json
+          if-no-files-found: error
+
+  promote:
+    needs: check
+    if: inputs.publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Recheck and promote the same assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          PROMOTE_RELEASE: 'true'
+        run: node scripts/promote-release.mjs

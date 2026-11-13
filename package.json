@@ -13,7 +13,7 @@
     "build:llmhubpp": "npm run build",
     "build:legacy": "npm run generate:builtin-okf && npm run check:docs-mcp && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production legacy",
     "package:llmhubpp": "npm run build && node scripts/package-unified.mjs",
-    "test:package": "node --test scripts/package-preview.test.mjs scripts/package-unified.test.mjs",
+    "test:package": "node --test scripts/package-preview.test.mjs scripts/package-unified.test.mjs scripts/release-check.test.mjs scripts/promote-release.test.mjs",
     "build:langfuse": "npm run generate:builtin-okf && npm run check:docs-mcp && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production langfuse",
     "test": "vitest run",
     "lint": "eslint .",
