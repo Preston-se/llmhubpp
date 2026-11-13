@@ -7,3 +7,5 @@ Keep user-visible settings in sync in Chinese and English. Update the offline Wi
 Use a disposable Obsidian vault for integration tests. Keep personal vaults, credentials, indexes and machine-specific evidence out of commits. Preserve existing data and external identifiers during upgrades.
 
 Push version commits on a branch. The manual GitHub Release workflow creates the release for the reviewed main commit.
+
+One task, one branch. After the pull request merges, delete the branch; keep `main` as the only long-lived branch and note any exception with its cleanup condition. [Daily development](docs/DEVELOPMENT.md)
