@@ -1,7 +1,7 @@
 {
   "name": "llmhubpp",
   "private": true,
-  "version": "1.261112.2",
+  "version": "1.261113.1",
   "description": "Desktop Obsidian plugin for chat, vault retrieval, workflows, and Safe Guard.",
   "main": "main.js",
   "scripts": {
