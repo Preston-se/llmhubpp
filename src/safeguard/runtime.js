@@ -777,7 +777,8 @@ class SafeGuardSettingTab extends PluginSettingTab {
     this.statusEl = null;
   }
 
-  async persist(label = "已自动保存") {
+  async persist(label = this.plugin.settingsText("Saved automatically", "已自动保存")) {
+    const tr = this.plugin.settingsText;
     try {
       await this.plugin.saveSettings();
       if (this.statusEl) {
@@ -789,48 +790,49 @@ class SafeGuardSettingTab extends PluginSettingTab {
     } catch (err) {
       console.error("[LLM Hub Safe Guard] save settings failed", err);
       if (this.statusEl) {
-        this.statusEl.setText(`保存失败：${err?.message || err}`);
+        this.statusEl.setText(tr("Could not save: ", "保存失败：") + (err?.message || err));
         this.statusEl.addClass("llm-hub-safe-guard-save-error");
       }
-      new Notice(`LLM Hub Safe Guard 设置保存失败：${err?.message || err}`);
+      new Notice(tr("Could not save Safe Guard settings: ", "Safe Guard 设置保存失败：") + (err?.message || err));
       return false;
     }
   }
 
   display() {
+    const tr = this.plugin.settingsText;
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "LLM Hub Safe Guard" });
-    containerEl.createEl("p", { text: "安全代理只保护经由 Safe Guard 地址发送的本地 LLM 请求。RAG embedding 和其他直接使用 11434 的软件不受影响。设置会在有效输入后自动保存；下方也提供“保存并应用”按钮。" });
+    containerEl.createEl("h2", { text: "Llmhub++ Safe Guard" });
+    containerEl.createEl("p", { text: tr("Safe Guard protects local requests sent through its proxy. Embeddings and apps that connect directly to Ollama are unaffected. Valid input saves automatically. Use Save and apply to restart the proxy.", "安全代理只保护经由 Safe Guard 地址发送的本地 LLM 请求。RAG embedding 和其他直接使用 11434 的软件不受影响。设置会在有效输入后自动保存；下方也提供“保存并应用”按钮。") });
 
     const statusRow = containerEl.createDiv({ cls: "llm-hub-safe-guard-save-status" });
-    statusRow.createEl("strong", { text: "设置状态：" });
-    this.statusEl = statusRow.createSpan({ text: "已加载当前设置" });
+    statusRow.createEl("strong", { text: tr("Settings status: ", "设置状态：") });
+    this.statusEl = statusRow.createSpan({ text: tr("Current settings loaded", "已加载当前设置") });
 
     new Setting(containerEl)
-      .setName("启用安全检查")
-      .setDesc("关闭后仍保持代理转发，但不弹出风险确认。")
+      .setName(tr("Enable safety checks", "启用安全检查"))
+      .setDesc(tr("The proxy still forwards requests when this is off. Risk confirmation is disabled.", "关闭后仍保持代理转发，但不弹出风险确认。"))
       .addToggle(t => t.setValue(this.plugin.settings.enabled).onChange(async v => {
         this.plugin.settings.enabled = v;
         await this.persist();
       }));
 
     new Setting(containerEl)
-      .setName("Safe Guard 监听端口")
-      .setDesc("修改后点击“保存并应用”即可重启代理。推荐保持 11435。")
+      .setName(tr("Safe Guard port", "Safe Guard 监听端口"))
+      .setDesc(tr("Click Save and apply to restart the proxy. The default port is 11435.", "修改后点击“保存并应用”即可重启代理。推荐保持 11435。"))
       .addText(t => t.setValue(String(this.plugin.settings.listenPort)).onChange(async v => {
         const n = Number(v);
         if (Number.isInteger(n) && n > 0 && n < 65536) {
           this.plugin.settings.listenPort = n;
-          await this.persist("端口已保存，待应用");
+          await this.persist(tr("Port saved. Apply it to restart the proxy.", "端口已保存，待应用"));
         } else if (this.statusEl) {
-          this.statusEl.setText("端口无效，未保存");
+          this.statusEl.setText(tr("Invalid port. No change saved.", "端口无效，未保存"));
         }
       }));
 
     new Setting(containerEl)
-      .setName("Ollama 上游地址")
-      .setDesc("你的真实 Ollama 服务仍保持 11434。")
+      .setName(tr("Ollama upstream address", "Ollama 上游地址"))
+      .setDesc(tr("Use the address of your Ollama service. Its default port is 11434.", "你的真实 Ollama 服务仍保持 11434。"))
       .addText(t => t.setValue(this.plugin.settings.upstreamBaseUrl).onChange(async v => {
         const next = v.trim().replace(/\/+$/, "");
         if (next) {
@@ -840,47 +842,47 @@ class SafeGuardSettingTab extends PluginSettingTab {
       }));
 
     new Setting(containerEl)
-      .setName("对话/文档警告阈值（估算 tokens）")
-      .setDesc("只按对话历史、用户内容、读取到的文档/工具结果计算；不再因为固定系统提示和工具定义过大而仅发送‘你好’就提醒。16K context 建议 8000。")
+      .setName(tr("Conversation and document warning threshold (estimated tokens)", "对话/文档警告阈值（估算 tokens）"))
+      .setDesc(tr("Estimates conversation history, user input, documents and tool results. For a 16K context, 8,000 is a suggested threshold.", "只按对话历史、用户内容、读取到的文档/工具结果计算；不再因为固定系统提示和工具定义过大而仅发送‘你好’就提醒。16K context 建议 8000。"))
       .addText(t => t.setValue(String(this.plugin.settings.warningEstimatedTokens)).onChange(async v => {
         const n = Number(v);
         if (Number.isFinite(n) && n >= 100) {
           this.plugin.settings.warningEstimatedTokens = Math.round(n);
           await this.persist();
         } else if (this.statusEl) {
-          this.statusEl.setText("警告阈值至少为 100，当前输入未保存");
+          this.statusEl.setText(tr("Enter a warning threshold of at least 100. No change saved.", "警告阈值至少为 100，当前输入未保存"));
         }
       }));
 
     new Setting(containerEl)
-      .setName("对话/文档阻止阈值（估算 tokens）")
-      .setDesc("同样只按动态对话/文档内容计算。正式使用建议 11000；接近上下文硬上限时还会由总上下文保护兜底。")
+      .setName(tr("Conversation and document block threshold (estimated tokens)", "对话/文档阻止阈值（估算 tokens）"))
+      .setDesc(tr("Uses the conversation and document estimate. A suggested threshold is 11,000. Total context limits also apply.", "同样只按动态对话/文档内容计算。正式使用建议 11000；接近上下文硬上限时还会由总上下文保护兜底。"))
       .addText(t => t.setValue(String(this.plugin.settings.blockEstimatedTokens)).onChange(async v => {
         const n = Number(v);
         if (Number.isFinite(n) && n >= 200) {
           this.plugin.settings.blockEstimatedTokens = Math.round(n);
           await this.persist();
         } else if (this.statusEl) {
-          this.statusEl.setText("阻止阈值至少为 200，当前输入未保存");
+          this.statusEl.setText(tr("Enter a block threshold of at least 200. No change saved.", "阻止阈值至少为 200，当前输入未保存"));
         }
       }));
 
     new Setting(containerEl)
-      .setName("本地模型上下文容量")
-      .setDesc("用于总上下文兜底保护。你的 Ollama 当前按 16K 使用时保持 16384；完整请求达到约 82% 时警告、95% 时高风险。")
+      .setName(tr("Local model context size", "本地模型上下文容量"))
+      .setDesc(tr("Set the actual context size. For a 16K model, use 16,384. Full requests are checked against the warning and block ratios.", "用于总上下文兜底保护。你的 Ollama 当前按 16K 使用时保持 16384；完整请求达到约 82% 时警告、95% 时高风险。"))
       .addText(t => t.setValue(String(this.plugin.settings.contextWindowTokens)).onChange(async v => {
         const n = Number(v);
         if (Number.isFinite(n) && n >= 2048) {
           this.plugin.settings.contextWindowTokens = Math.round(n);
           await this.persist();
         } else if (this.statusEl) {
-          this.statusEl.setText("上下文容量无效，未保存");
+          this.statusEl.setText(tr("Invalid context size. No change saved.", "上下文容量无效，未保存"));
         }
       }));
 
     new Setting(containerEl)
-      .setName("图片警告/阻止")
-      .setDesc("针对真正随请求发送给视觉模型的图片数量。格式：警告,阻止，例如 4,8。")
+      .setName(tr("Image warning and block limits", "图片警告/阻止"))
+      .setDesc(tr("Counts attached images. Enter warning and block limits separated by a comma, such as 4,8.", "针对真正随请求发送给视觉模型的图片数量。格式：警告,阻止，例如 4,8。"))
       .addText(t => t.setValue(`${this.plugin.settings.warningActualImages},${this.plugin.settings.blockActualImages}`).onChange(async v => {
         const [a,b] = v.split(",").map(x => Number(x.trim()));
         if (Number.isInteger(a) && Number.isInteger(b) && a >= 0 && b > a) {
@@ -888,16 +890,16 @@ class SafeGuardSettingTab extends PluginSettingTab {
           this.plugin.settings.blockActualImages = b;
           await this.persist();
         } else if (this.statusEl) {
-          this.statusEl.setText("图片阈值格式无效，应为“警告,阻止”，且阻止值更大");
+          this.statusEl.setText(tr("Enter two comma-separated limits. The block limit must be higher.", "图片阈值格式无效，应为“警告,阻止”，且阻止值更大"));
         }
       }));
 
-    containerEl.createEl("h3", { text: "Markdown Vision Bridge（v0.6）" });
-    containerEl.createEl("p", { text: "把聊天/选中文本里的 Markdown、Wiki 和 HTML 图片引用解析为 Vault 中的真实图片，并作为多模态图片随请求发送。支持本地 11435 路径和手工选择 DeepSeek 的直连 API Provider。" });
+    containerEl.createEl("h3", { text: tr("Markdown image bridge", "Markdown Vision Bridge（v0.6）") });
+    containerEl.createEl("p", { text: tr("Attach vault images referenced in Markdown, wiki links or HTML. Supports the local proxy and compatible direct provider requests.", "把聊天/选中文本里的 Markdown、Wiki 和 HTML 图片引用解析为 Vault 中的真实图片，并作为多模态图片随请求发送。支持本地 11435 路径和手工选择 DeepSeek 的直连 API Provider。") });
 
     new Setting(containerEl)
-      .setName("启用 Markdown 图片桥接")
-      .setDesc("推荐开启。支持 ![](path)、![[path]] 和 <img src=...>；仅解析 Vault 内本地图片，不下载外部 URL。")
+      .setName(tr("Enable the Markdown image bridge", "启用 Markdown 图片桥接"))
+      .setDesc(tr("Supports ![](path), ![[path]], and <img src=...>. Resolves vault images only.", "推荐开启。支持 ![](path)、![[path]] 和 <img src=...>；仅解析 Vault 内本地图片，不下载外部 URL。"))
       .addToggle(t => t.setValue(this.plugin.settings.markdownVisionEnabled !== false).onChange(async v => {
         this.plugin.settings.markdownVisionEnabled = v;
         await this.persist();
@@ -905,8 +907,8 @@ class SafeGuardSettingTab extends PluginSettingTab {
       }));
 
     new Setting(containerEl)
-      .setName("手工 API Provider 图片桥接")
-      .setDesc("为 LLM Hub 中手工选择的 DeepSeek/视觉 API Provider 安装一个严格限定的 fetch 钩子。只在当前请求含本地 Markdown 图片引用且模型支持视觉时改写请求；卸载插件时自动恢复。")
+      .setName(tr("Image bridge for a selected API provider", "手工 API Provider 图片桥接"))
+      .setDesc(tr("Attach local Markdown images when the selected API route supports vision. The hook is removed when the plugin unloads.", "为 LLM Hub 中手工选择的 DeepSeek/视觉 API Provider 安装一个严格限定的 fetch 钩子。只在当前请求含本地 Markdown 图片引用且模型支持视觉时改写请求；卸载插件时自动恢复。"))
       .addToggle(t => t.setValue(this.plugin.settings.markdownVisionDirectProviderHook !== false).onChange(async v => {
         this.plugin.settings.markdownVisionDirectProviderHook = v;
         await this.persist();
@@ -915,37 +917,37 @@ class SafeGuardSettingTab extends PluginSettingTab {
       }));
 
     new Setting(containerEl)
-      .setName("单张 Markdown 图片上限（MB）")
-      .setDesc("超过该大小不会静默发送，会在状态/Notice 中明确标记。默认 16 MB，避免 base64 请求体过大。")
+      .setName(tr("Maximum size per Markdown image (MB)", "单张 Markdown 图片上限（MB）"))
+      .setDesc(tr("Larger images are reported and skipped. The default is 16 MB.", "超过该大小不会静默发送，会在状态/Notice 中明确标记。默认 16 MB，避免 base64 请求体过大。"))
       .addText(t => t.setValue(String(this.plugin.settings.markdownVisionMaxImageMB || 16)).onChange(async v => {
         const n = Number(v);
         if (Number.isFinite(n) && n >= 1 && n <= 32) {
           this.plugin.settings.markdownVisionMaxImageMB = Math.round(n);
           await this.persist();
         } else if (this.statusEl) {
-          this.statusEl.setText("单张图片上限应为 1-32 MB");
+          this.statusEl.setText(tr("Enter an image limit from 1 to 32 MB.", "单张图片上限应为 1-32 MB"));
         }
       }));
 
     new Setting(containerEl)
-      .setName("单次本地请求硬超时")
-      .setDesc("超过该时间会中止 Safe Guard 与 Ollama 的连接，避免单次任务长时间占用。默认 240 秒（4 分钟）。")
+      .setName(tr("Local request timeout", "单次本地请求硬超时"))
+      .setDesc(tr("Safe Guard ends the Ollama connection after this time. The default is 240 seconds.", "超过该时间会中止 Safe Guard 与 Ollama 的连接，避免单次任务长时间占用。默认 240 秒（4 分钟）。"))
       .addText(t => t.setValue(String(this.plugin.settings.hardTimeoutSeconds)).onChange(async v => {
         const n = Number(v);
         if (Number.isFinite(n) && n >= 30) {
           this.plugin.settings.hardTimeoutSeconds = Math.round(n);
           await this.persist();
         } else if (this.statusEl) {
-          this.statusEl.setText("硬超时至少为 30 秒，当前输入未保存");
+          this.statusEl.setText(tr("Enter a timeout of at least 30 seconds. No change saved.", "硬超时至少为 30 秒，当前输入未保存"));
         }
       }));
 
-    containerEl.createEl("h3", { text: "Vault 默认权限（B2）" });
-    containerEl.createEl("p", { text: "新聊天默认 Read Only；当前聊天中如果你主动切到 All / No Search，则本聊天保持写权限。下一次新聊天会自动恢复 Read Only。Safe Guard 同时在代理层移除写入类 Vault tools，作为 UI 同步失败时的保底。" });
+    containerEl.createEl("h3", { text: tr("Default vault permissions", "Vault 默认权限（B2）") });
+    containerEl.createEl("p", { text: tr("New chats start in Read Only. All or No Search unlocks writing for the current chat. The proxy can enforce read-only access if the interface is out of sync.", "新聊天默认 Read Only；当前聊天中如果你主动切到 All / No Search，则本聊天保持写权限。下一次新聊天会自动恢复 Read Only。Safe Guard 同时在代理层移除写入类 Vault tools，作为 UI 同步失败时的保底。") });
 
     new Setting(containerEl)
-      .setName("新聊天默认 Read Only")
-      .setDesc("推荐开启。不会在当前聊天中反复强制覆盖你的手动选择。")
+      .setName(tr("Start new chats in Read Only", "新聊天默认 Read Only"))
+      .setDesc(tr("Your manual access choice is kept for the current chat.", "推荐开启。不会在当前聊天中反复强制覆盖你的手动选择。"))
       .addToggle(t => t.setValue(this.plugin.settings.defaultReadOnlyEnabled).onChange(async v => {
         this.plugin.settings.defaultReadOnlyEnabled = v;
         await this.persist();
@@ -953,8 +955,8 @@ class SafeGuardSettingTab extends PluginSettingTab {
       }));
 
     new Setting(containerEl)
-      .setName("同步 LLM Hub 界面")
-      .setDesc("尝试把 LLM Hub 的 Vault 模式按钮同步成 Read Only。即使未来 LLM Hub UI 改版导致同步失败，下面的代理层只读保护仍可继续工作。")
+      .setName(tr("Sync the Llmhub++ interface", "同步 LLM Hub 界面"))
+      .setDesc(tr("Sync the vault mode button with Read Only. The proxy can enforce read-only access independently.", "尝试把 LLM Hub 的 Vault 模式按钮同步成 Read Only。即使未来 LLM Hub UI 改版导致同步失败，下面的代理层只读保护仍可继续工作。"))
       .addToggle(t => t.setValue(this.plugin.settings.syncLlmHubUi).onChange(async v => {
         this.plugin.settings.syncLlmHubUi = v;
         await this.persist();
@@ -962,48 +964,48 @@ class SafeGuardSettingTab extends PluginSettingTab {
       }));
 
     new Setting(containerEl)
-      .setName("代理层强制 Read Only")
-      .setDesc("推荐开启。只读会移除 create/edit/delete/rename/create_folder 等写工具；当你在当前聊天主动选择 All / No Search 时临时解锁。")
+      .setName(tr("Enforce Read Only in the proxy", "代理层强制 Read Only"))
+      .setDesc(tr("Read Only removes write tools. All or No Search unlocks them for the current chat.", "推荐开启。只读会移除 create/edit/delete/rename/create_folder 等写工具；当你在当前聊天主动选择 All / No Search 时临时解锁。"))
       .addToggle(t => t.setValue(this.plugin.settings.enforceProxyReadOnly).onChange(async v => {
         this.plugin.settings.enforceProxyReadOnly = v;
         await this.persist();
       }));
 
     new Setting(containerEl)
-      .setName("当前聊天权限")
-      .setDesc(this.plugin.sessionWriteUnlocked ? "当前聊天：写入已解锁（All / No Search）" : "当前聊天：Read Only")
-      .addButton(btn => btn.setButtonText("恢复 Read Only").onClick(async () => {
+      .setName(tr("Current chat permissions", "当前聊天权限"))
+      .setDesc(this.plugin.sessionWriteUnlocked ? tr("Current chat: Write access unlocked (All / No Search)", "当前聊天：写入已解锁（All / No Search）") : tr("Current chat: Read Only", "当前聊天：Read Only"))
+      .addButton(btn => btn.setButtonText(tr("Restore Read Only", "恢复 Read Only")).onClick(async () => {
         await this.plugin.lockCurrentChat(true);
         this.display();
       }))
-      .addButton(btn => btn.setButtonText("允许 All").setWarning().onClick(async () => {
+      .addButton(btn => btn.setButtonText(tr("Allow All", "允许 All")).setWarning().onClick(async () => {
         await this.plugin.unlockCurrentChat(true);
         this.display();
       }));
 
 
-    containerEl.createEl("h3", { text: "智能路由（v0.5）" });
-    containerEl.createEl("p", { text: "Auto 可在设置页和 Chat 面板随时开关。风险弹窗中手动选择 DeepSeek 后，会把当前连续对话锁定在该路由；面板会显示持续路由状态，点击 × 即恢复普通 Auto 判定。新聊天自动回到普通 Auto。" });
+    containerEl.createEl("h3", { text: tr("Automatic routing", "智能路由（v0.5）") });
+    containerEl.createEl("p", { text: tr("Toggle Auto here or in chat. DeepSeek selected in a risk prompt stays pinned for the current conversation. Clear it with ×. New chats use normal Auto routing.", "Auto 可在设置页和 Chat 面板随时开关。风险弹窗中手动选择 DeepSeek 后，会把当前连续对话锁定在该路由；面板会显示持续路由状态，点击 × 即恢复普通 Auto 判定。新聊天自动回到普通 Auto。") });
 
     new Setting(containerEl)
-      .setName("启用智能路由")
-      .setDesc("关闭后仍保留资源守卫和 Read Only，但所有允许请求都继续走当前本地模型。")
+      .setName(tr("Enable automatic routing", "启用智能路由"))
+      .setDesc(tr("With routing off, allowed requests use the current local model. Resource limits and Read Only still apply.", "关闭后仍保留资源守卫和 Read Only，但所有允许请求都继续走当前本地模型。"))
       .addToggle(t => t.setValue(this.plugin.settings.routerEnabled).onChange(async v => {
         await this.plugin.setRouterEnabled(v, false);
-        if (this.statusEl) this.statusEl.setText(`Auto 路由已${v ? "开启" : "关闭"} · ${new Date().toLocaleTimeString()}`);
+        if (this.statusEl) this.statusEl.setText((v ? tr("Auto routing enabled", "Auto 路由已开启") : tr("Auto routing disabled", "Auto 路由已关闭")) + " · " + new Date().toLocaleTimeString());
       }));
 
     new Setting(containerEl)
-      .setName("低风险图片自动走视觉模型")
-      .setDesc("实际随请求发送了图片且未达到资源警告阈值时，自动把本次请求模型改为下面的视觉模型。不会处理仅存在 Markdown 图片路径、但图片没有实际附加到请求的情况。")
+      .setName(tr("Route low-risk images to the vision model", "低风险图片自动走视觉模型"))
+      .setDesc(tr("Use the model below when the request includes attached images and stays below the warning limits.", "实际随请求发送了图片且未达到资源警告阈值时，自动把本次请求模型改为下面的视觉模型。不会处理仅存在 Markdown 图片路径、但图片没有实际附加到请求的情况。"))
       .addToggle(t => t.setValue(this.plugin.settings.autoRouteImages).onChange(async v => {
         this.plugin.settings.autoRouteImages = v;
         await this.persist();
       }));
 
     new Setting(containerEl)
-      .setName("视觉模型 ID")
-      .setDesc("Ollama 中的真实模型 ID。当前建议 qwen3-vl:4b-instruct。")
+      .setName(tr("Vision model ID", "视觉模型 ID"))
+      .setDesc(tr("Enter an installed Ollama vision model ID, such as qwen3-vl:4b-instruct.", "Ollama 中的真实模型 ID。当前建议 qwen3-vl:4b-instruct。"))
       .addText(t => t.setValue(this.plugin.settings.visionModel).onChange(async v => {
         const next = v.trim();
         if (next) {
@@ -1013,24 +1015,24 @@ class SafeGuardSettingTab extends PluginSettingTab {
       }));
 
     new Setting(containerEl)
-      .setName("允许本次请求路由到高级模型")
-      .setDesc("仅在风险弹窗中由你手动确认。Safe Guard 会复用 LLM Hub 已加载到内存中的 API 配置和密钥，不复制密钥到自己的 data.json。")
+      .setName(tr("Allow routing to an advanced model", "允许本次请求路由到高级模型"))
+      .setDesc(tr("Confirm the route in the risk prompt. Safe Guard reuses the active provider credentials without copying them into its settings file.", "仅在风险弹窗中由你手动确认。Safe Guard 会复用 LLM Hub 已加载到内存中的 API 配置和密钥，不复制密钥到自己的 data.json。"))
       .addToggle(t => t.setValue(this.plugin.settings.advancedRouteEnabled).onChange(async v => {
         this.plugin.settings.advancedRouteEnabled = v;
         await this.persist();
       }));
 
     new Setting(containerEl)
-      .setName("高级模型提供方关键词")
-      .setDesc("用于从 LLM Hub 已启用 API Provider 中自动定位目标。默认 DeepSeek。")
+      .setName(tr("Advanced provider match", "高级模型提供方关键词"))
+      .setDesc(tr("Match an enabled API provider. The default is DeepSeek.", "用于从 LLM Hub 已启用 API Provider 中自动定位目标。默认 DeepSeek。"))
       .addText(t => t.setValue(this.plugin.settings.advancedProviderHint).onChange(async v => {
         this.plugin.settings.advancedProviderHint = v.trim();
         await this.persist();
       }));
 
     new Setting(containerEl)
-      .setName("高级模型关键词")
-      .setDesc("默认 deepseek-flash；如果模型名称调整，可在此修改关键词。")
+      .setName(tr("Advanced model match", "高级模型关键词"))
+      .setDesc(tr("The default is deepseek-flash. Update this match if the model ID changes.", "默认 deepseek-flash；如果模型名称调整，可在此修改关键词。"))
       .addText(t => t.setValue(this.plugin.settings.advancedModelHint).onChange(async v => {
         this.plugin.settings.advancedModelHint = v.trim();
         await this.persist();
@@ -1038,25 +1040,25 @@ class SafeGuardSettingTab extends PluginSettingTab {
 
     const route = this.plugin.getAdvancedRoute();
     const routerStatus = containerEl.createDiv({ cls: "llm-hub-safe-guard-status" });
-    routerStatus.createEl("strong", { text: "视觉路由：" });
-    routerStatus.createSpan({ text: this.plugin.settings.visionModel || "未配置" });
+    routerStatus.createEl("strong", { text: tr("Vision route: ", "视觉路由：") });
+    routerStatus.createSpan({ text: this.plugin.settings.visionModel || tr("Not configured", "未配置") });
     routerStatus.createEl("br");
-    routerStatus.createEl("strong", { text: "高级路由：" });
-    routerStatus.createSpan({ text: route ? `已检测 ${route.displayName}` : "未检测到可用 DeepSeek/API Provider（不会读取或显示密钥）" });
+    routerStatus.createEl("strong", { text: tr("Advanced route: ", "高级路由：") });
+    routerStatus.createSpan({ text: route ? tr("Detected ", "已检测 ") + route.displayName : tr("No matching DeepSeek or API provider found.", "未检测到可用 DeepSeek/API Provider（不会读取或显示密钥）") });
     routerStatus.createEl("br");
-    routerStatus.createEl("strong", { text: "最近一次路由：" });
-    routerStatus.createSpan({ text: this.plugin.lastRouteLabel || "尚无" });
+    routerStatus.createEl("strong", { text: tr("Last route: ", "最近一次路由：") });
+    routerStatus.createSpan({ text: this.plugin.lastRouteLabel || tr("None yet", "尚无") });
     routerStatus.createEl("br");
-    routerStatus.createEl("strong", { text: "当前连续路由：" });
-    routerStatus.createSpan({ text: this.plugin.conversationPinnedRoute ? `持续 ${this.plugin.routeDisplayName(this.plugin.conversationPinnedRoute)}（可在 Chat 面板点击 × 取消）` : "无，按 Auto 正常判定" });
+    routerStatus.createEl("strong", { text: tr("Pinned conversation route: ", "当前连续路由：") });
+    routerStatus.createSpan({ text: this.plugin.conversationPinnedRoute ? this.plugin.routeDisplayName(this.plugin.conversationPinnedRoute) + tr(" (clear with × in Chat)", "（可在对话面板点击 × 取消）") : tr("None. Normal Auto routing.", "无，按 Auto 正常判定") });
 
 
-    containerEl.createEl("h3", { text: "上下文管理（v0.5）" });
-    containerEl.createEl("p", { text: "使用 Rolling Summary：聊天界面保留完整历史，真正发送给模型时仅保留压缩记忆 + 你为该次压缩选择的最近 N 条原始消息 + 新问题。状态颜色按 LLM Hub 当前手动选择的模型计算，不受 Auto 路由或持续路由影响。" });
+    containerEl.createEl("h3", { text: tr("Context management", "上下文管理（v0.5）") });
+    containerEl.createEl("p", { text: tr("The chat keeps the full history. After summarizing, requests include the summary, the recent messages you kept and the new question. The indicator uses the model selected in chat.", "使用 Rolling Summary：聊天界面保留完整历史，真正发送给模型时仅保留压缩记忆 + 你为该次压缩选择的最近 N 条原始消息 + 新问题。状态颜色按 LLM Hub 当前手动选择的模型计算，不受 Auto 路由或持续路由影响。") });
 
     new Setting(containerEl)
-      .setName("启用上下文管理")
-      .setDesc("开启彩色上下文状态、手动压缩、取消消息隔离和压缩记忆。")
+      .setName(tr("Enable context management", "启用上下文管理"))
+      .setDesc(tr("Show context usage and enable manual summaries, summary memory and restoring isolated messages.", "开启彩色上下文状态、手动压缩、取消消息隔离和压缩记忆。"))
       .addToggle(t => t.setValue(this.plugin.settings.contextManagerEnabled).onChange(async v => {
         this.plugin.settings.contextManagerEnabled = v;
         await this.persist();
@@ -1065,10 +1067,15 @@ class SafeGuardSettingTab extends PluginSettingTab {
 
     const compressionOptions = this.plugin.getCompressionModelOptions();
     new Setting(containerEl)
-      .setName("默认压缩模型")
-      .setDesc("点击上下文状态后仍可为单次压缩临时改选。远程模型不会被静默调用。")
+      .setName(tr("Default summarization model", "默认压缩模型"))
+      .setDesc(tr("Open the context indicator to choose a different model for one summary. Remote models require your choice.", "点击上下文状态后仍可为单次压缩临时改选。远程模型不会被静默调用。"))
       .addDropdown(drop => {
-        for (const opt of compressionOptions) drop.addOption(opt.value, opt.label);
+        for (const opt of compressionOptions) {
+          const label = opt.type === "advanced" && opt.route
+            ? opt.route.displayName + tr(" (remote)", "（远程）")
+            : opt.label;
+          drop.addOption(opt.value, label);
+        }
         if (this.plugin.settings.defaultCompressionModel && !compressionOptions.some(o => o.value === this.plugin.settings.defaultCompressionModel)) {
           drop.addOption(this.plugin.settings.defaultCompressionModel, this.plugin.settings.defaultCompressionModel);
         }
@@ -1080,8 +1087,8 @@ class SafeGuardSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("本地压缩分块大小")
-      .setDesc("估算 token。默认 3200，避免让本地 4B 模型为了压缩上下文本身先进入高负载。")
+      .setName(tr("Local summary chunk size", "本地压缩分块大小"))
+      .setDesc(tr("Estimated tokens per chunk. The default is 3,200.", "估算 token。默认 3200，避免让本地 4B 模型为了压缩上下文本身先进入高负载。"))
       .addText(t => t.setValue(String(this.plugin.settings.compressionChunkTokens)).onChange(async v => {
         const n = Number(v);
         if (Number.isFinite(n) && n >= 1000 && n <= 12000) {
@@ -1091,8 +1098,8 @@ class SafeGuardSettingTab extends PluginSettingTab {
       }));
 
     new Setting(containerEl)
-      .setName("目标摘要大小")
-      .setDesc("估算 token。默认约 1200，用于长期滚动记忆。")
+      .setName(tr("Target summary size", "目标摘要大小"))
+      .setDesc(tr("Estimated tokens in the rolling summary. The default is about 1,200.", "估算 token。默认约 1200，用于长期滚动记忆。"))
       .addText(t => t.setValue(String(this.plugin.settings.compressionTargetTokens)).onChange(async v => {
         const n = Number(v);
         if (Number.isFinite(n) && n >= 400 && n <= 4000) {
@@ -1102,8 +1109,8 @@ class SafeGuardSettingTab extends PluginSettingTab {
       }));
 
     new Setting(containerEl)
-      .setName("默认保留最近消息")
-      .setDesc("作为每次打开压缩窗口的默认值；单次压缩可在 0–当前聊天全部消息数之间临时选择。0 表示全部旧消息进入摘要。")
+      .setName(tr("Recent messages to keep by default", "默认保留最近消息"))
+      .setDesc(tr("Choose a default for the summary dialog. Use 0 to include all older messages in the summary.", "作为每次打开压缩窗口的默认值；单次压缩可在 0–当前聊天全部消息数之间临时选择。0 表示全部旧消息进入摘要。"))
       .addText(t => t.setValue(String(this.plugin.settings.compressionKeepRecentMessages)).onChange(async v => {
         const n = Number(v);
         if (Number.isInteger(n) && n >= 0 && n <= 99) {
@@ -1113,8 +1120,8 @@ class SafeGuardSettingTab extends PluginSettingTab {
       }));
 
     new Setting(containerEl)
-      .setName("DeepSeek 上下文 / 输出预留")
-      .setDesc("默认按官方当前 1M Context；思考模式默认输出预留 64K。格式：上下文,预留，例如 1000000,64000。")
+      .setName(tr("DeepSeek context and output reserve", "DeepSeek 上下文 / 输出预留"))
+      .setDesc(tr("Enter context size and output reserve separated by a comma. The default is 1000000,64000.", "默认按官方当前 1M Context；思考模式默认输出预留 64K。格式：上下文,预留，例如 1000000,64000。"))
       .addText(t => t.setValue(`${this.plugin.settings.deepSeekContextTokens},${this.plugin.settings.deepSeekOutputReserveTokens}`).onChange(async v => {
         const [a,b] = v.split(",").map(x => Number(x.trim()));
         if (Number.isFinite(a) && Number.isFinite(b) && a >= 100000 && b >= 1000 && b < a) {
@@ -1126,71 +1133,97 @@ class SafeGuardSettingTab extends PluginSettingTab {
 
     const ctxState = this.plugin.getContextState();
     const ctxHealth = this.plugin.getContextHealth();
+    const healthLabels = {
+      "健康": tr("Healthy", "健康"), "注意": tr("Caution", "注意"), "偏高": tr("High", "偏高"),
+      "需要压缩": tr("Summary needed", "需要压缩"), "载入历史压缩记忆": tr("Loading summary", "载入历史压缩记忆"),
+    };
     const ctxStatus = containerEl.createDiv({ cls: "llm-hub-safe-guard-status" });
-    ctxStatus.createEl("strong", { text: "当前上下文：" });
-    ctxStatus.createSpan({ text: `${ctxHealth.modelLabel} · ${Math.round(ctxHealth.ratio * 100)}% · ${ctxHealth.level}` });
+    ctxStatus.createEl("strong", { text: tr("Current context: ", "当前上下文：") });
+    ctxStatus.createSpan({ text: `${ctxHealth.modelLabel === "本地模型" ? tr("Local model", "本地模型") : ctxHealth.modelLabel} · ${Math.round(ctxHealth.ratio * 100)}% · ${healthLabels[ctxHealth.level] ?? ctxHealth.level}` });
     ctxStatus.createEl("br");
-    ctxStatus.createEl("strong", { text: "压缩记忆：" });
-    ctxStatus.createSpan({ text: ctxState.summary ? `已启用，约 ${estimateTokens(ctxState.summary).toLocaleString()} tokens；覆盖到第 ${ctxState.summaryCoveredCount || 0} 条可见消息` : "未建立" });
+    ctxStatus.createEl("strong", { text: tr("Summary memory: ", "压缩记忆：") });
+    ctxStatus.createSpan({ text: ctxState.summary ? tr("About ", "约 ") + estimateTokens(ctxState.summary).toLocaleString() + tr(" tokens, through message ", " 个 Token，覆盖到第 ") + (ctxState.summaryCoveredCount || 0) : tr("None", "未建立") });
     ctxStatus.createEl("br");
-    ctxStatus.createEl("strong", { text: "最近压缩：" });
-    ctxStatus.createSpan({ text: ctxState.lastCompressedAt ? new Date(ctxState.lastCompressedAt).toLocaleString() : "尚无" });
+    ctxStatus.createEl("strong", { text: tr("Last summary: ", "最近压缩：") });
+    ctxStatus.createSpan({ text: ctxState.lastCompressedAt ? new Date(ctxState.lastCompressedAt).toLocaleString() : tr("None yet", "尚无") });
 
     new Setting(containerEl)
-      .setName("保存设置")
-      .setDesc("通常无需手动保存；此按钮用于明确保存并重启安全代理，使监听端口等变化立即生效。")
+      .setName(tr("Save settings", "保存设置"))
+      .setDesc(tr("Valid changes save automatically. Use this button to save and restart the proxy after changing its port.", "通常无需手动保存；此按钮用于明确保存并重启安全代理，使监听端口等变化立即生效。"))
       .addButton(btn => btn
-        .setButtonText("保存并应用")
+        .setButtonText(tr("Save and apply", "保存并应用"))
         .setCta()
         .onClick(async () => {
-          const ok = await this.persist("已保存，正在应用");
+          const ok = await this.persist(tr("Saved. Applying changes.", "已保存，正在应用"));
           if (!ok) return;
           await this.plugin.restartProxy();
-          if (this.statusEl) this.statusEl.setText(`已保存并应用 · ${new Date().toLocaleTimeString()}`);
-          new Notice("LLM Hub Safe Guard 设置已保存并应用");
+          if (this.statusEl) this.statusEl.setText(tr("Saved and applied", "已保存并应用") + " · " + new Date().toLocaleTimeString());
+          new Notice(tr("Safe Guard settings saved and applied", "LLM Hub Safe Guard 设置已保存并应用"));
         }))
       .addButton(btn => btn
-        .setButtonText("恢复默认")
+        .setButtonText(tr("Restore defaults", "恢复默认"))
         .onClick(async () => {
           this.plugin.settings = Object.assign({}, DEFAULT_SETTINGS);
-          await this.persist("已恢复默认");
+          await this.persist(tr("Defaults restored", "已恢复默认"));
           await this.plugin.restartProxy();
           this.display();
-          new Notice("LLM Hub Safe Guard 已恢复默认设置");
+          new Notice(tr("Safe Guard defaults restored", "LLM Hub Safe Guard 已恢复默认设置"));
         }));
 
     const status = containerEl.createDiv({ cls: "llm-hub-safe-guard-status" });
-    status.createEl("strong", { text: "代理地址：" });
+    status.createEl("strong", { text: tr("Proxy address: ", "代理地址：") });
     status.createSpan({ text: `http://${this.plugin.settings.listenHost}:${this.plugin.settings.listenPort}` });
     status.createEl("br");
-    status.createEl("strong", { text: "健康检查：" });
+    status.createEl("strong", { text: tr("Health check: ", "健康检查：") });
     status.createSpan({ text: `http://${this.plugin.settings.listenHost}:${this.plugin.settings.listenPort}/health` });
     status.createEl("br");
-    status.createEl("strong", { text: "LLM Hub 版本：" });
-    status.createSpan({ text: this.plugin.getLlmHubVersion() });
+    status.createEl("strong", { text: tr("Llmhub++ version: ", "LLM Hub 版本：") });
+    const version = this.plugin.getLlmHubVersion();
+    status.createSpan({ text: version === "未检测到" ? tr("Not detected", "未检测到") : version });
     status.createEl("br");
-    status.createEl("strong", { text: "Vault Guard：" });
-    status.createSpan({ text: this.plugin.sessionWriteUnlocked ? "当前聊天允许写入" : "当前聊天 Read Only" });
+    status.createEl("strong", { text: tr("Vault access: ", "Vault Guard：") });
+    status.createSpan({ text: this.plugin.sessionWriteUnlocked ? tr("Current chat can write", "当前聊天允许写入") : tr("Current chat is read-only", "当前聊天 Read Only") });
     status.createEl("br");
-    status.createEl("strong", { text: "UI 同步：" });
-    status.createSpan({ text: this.plugin.uiBridgeStatus });
+    status.createEl("strong", { text: tr("Interface sync:", "UI 同步：") });
+    const sync = this.plugin.uiBridgeStatus;
+    const syncLabels = {
+      "等待 LLM Hub Chat": tr("Waiting for the chat view", "等待对话面板"),
+      "UI同步等待：未找到 Vault 按钮": tr("Waiting for the vault access button", "等待资料库权限按钮"),
+      "UI同步不可用：模式项未找到或被禁用": tr("Interface sync unavailable", "界面同步不可用"),
+    };
+    const syncText = syncLabels[sync] ?? tr(sync.replace(/^当前聊天：/, "Current chat: ").replace("（UI已同步）", " (synced)").replace("（写入已解锁）", " (write access unlocked)"), sync);
+    status.createSpan({ text: syncText });
   }
 }
 
 module.exports = class SafeGuardRuntime extends Component {
-  constructor(host) {
+  constructor(host, settingsText = (_english, chinese) => chinese) {
     super();
+    this.settingsText = settingsText;
     this.disposed = false;
     this.host = host;
     this.app = host.app;
-    this.manifest = { ...host.manifest, id: 'llmhubpp-safe-guard', name: 'LLM Hub Safe Guard', version: '0.6.2' };
+    this.manifest = { ...host.manifest, id: 'llmhubpp-safe-guard', name: 'Llmhub++ Safe Guard', version: '0.6.2' };
     this.ready = Promise.resolve();
     this.saveQueue = Promise.resolve();
     this.configurationActiveRequests = 0;
     this.configurationReloading = false;
   }
   onload() { this.ready = this.initialize(); }
-  addCommand(command) { return this.host.addCommand(command); }
+  addCommand(command) {
+    const names = {
+      "lock-current-chat-read-only": "Restore Read Only for the current chat",
+      "unlock-current-chat-all": "Allow write access for the current chat",
+      "toggle-auto-router": "Toggle automatic model routing",
+      "cancel-pinned-route": "Clear the pinned route and return to Auto",
+      "resync-vault-read-only-ui": "Sync the chat interface to Read Only",
+      "compress-current-context": "Summarize the current chat context",
+      "rebuild-context-memory-from-full-history": "Rebuild summary memory from chat history",
+      "clear-context-memory": "Clear summary memory for the current chat",
+    };
+    const english = names[command.id];
+    return this.host.addCommand(english ? { ...command, name: this.settingsText(english, command.name) } : command);
+  }
   addSettingTab(tab) { return this.host.addSettingTab(tab); }
   async loadData() {
     const file = `${this.host.manifest.dir}/safe-guard.json`;

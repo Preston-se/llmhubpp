@@ -6,9 +6,9 @@ import { settingsText as tr } from './settingsText';
 export function displayRequestControls(container:HTMLElement,{plugin,display}:SettingsContext):void{
   const settings=plugin.getRequestControls();
   const save=(updates:Partial<RequestControls>)=>{void plugin.updateRequestControls(updates).then(display).catch(error=>new Notice(error instanceof Error?error.message:String(error)));};
-  new Setting(container).setName('保护范围例外').setDesc('首次说明原因并记住选择，更换条件后重新询问。附件外发例外保留费用限制；费用范围例外记为未知，处于硬预算范围之外。')
-    .addButton(button=>button.setButtonText('重置已记住的选择').onClick(()=>{
-      void plugin.resetRequestProtectionChoices().then(()=>new Notice('已重置，下次遇到时将重新询问')).catch(error=>new Notice(String(error)));
+  new Setting(container).setName(tr("Protection exceptions", '保护范围例外')).setDesc(tr("The first prompt explains the limitation and remembers your choice for matching conditions. Attachment exceptions retain cost limits. Billing exceptions are recorded as unknown and fall outside the hard budget.", '首次说明原因并记住选择，更换条件后重新询问。附件外发例外保留费用限制；费用范围例外记为未知，处于硬预算范围之外。'))
+    .addButton(button=>button.setButtonText(tr("Reset remembered choices", '重置已记住的选择')).onClick(()=>{
+      void plugin.resetRequestProtectionChoices().then(()=>new Notice(tr("Choices reset. The next matching request will ask again.", '已重置，下次遇到时将重新询问'))).catch(error=>new Notice(String(error)));
     }));
   container.createEl('p',{text:tr('Controls apply to built-in desktop API requests, including embeddings and tool rounds. External CLI, MCP services and live voice have separate billing. Month boundaries use UTC. Existing unpriced traffic is not assumed free.','管控桌面端内置 API 请求，包含嵌入和工具回合。外部 CLI、MCP 服务及实时语音单独计费；月份按 UTC。未知费用不按免费处理。')});
   const summary=plugin.requestUsage?.summary();

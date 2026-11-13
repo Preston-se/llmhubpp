@@ -7,7 +7,7 @@ const require=createRequire(import.meta.url);
 class Component { load(){(this as any).onload?.();} unload(){(this as any).onunload?.();} }
 class Plugin extends Component {}
 const load=(file:string,overrides:Record<string,unknown>={})=>{
-  const context={module:{exports:{}},require:(id:string)=>id==='obsidian'?{Component,Plugin,PluginSettingTab:class{},Modal:class{},Setting:class{},Notice:class{},normalizePath:(p:string)=>p}:overrides[id]??require(id),console,setTimeout,clearTimeout,URL};
+  const context={module:{exports:{}},require:(id:string)=>overrides[id]??(id==='obsidian'?{Component,Plugin,PluginSettingTab:class{},Modal:class{},Setting:class{},Notice:class{},normalizePath:(p:string)=>p}:require(id)),console,setTimeout,clearTimeout,URL};
   vm.runInNewContext(fs.readFileSync(file,'utf8'),context,{filename:file});
   return context.module.exports as any;
 };
@@ -67,3 +67,40 @@ describe('Safe Guard internalization equivalence',()=>{
     expect(server.listening).toBe(false);
   });
 });
+
+it.each([['en', 'Enable safety checks', 'Save and apply'], ['zh', '启用安全检查', '保存并应用']])(
+  'renders the installed Safe Guard settings in %s', async (locale, enabled, apply) => {
+    const labels: string[] = [];
+    const root = {
+      empty() {}, setText(value: string) { labels.push(value); },
+      createEl(_tag: string, options?: { text?: string }) { if (options?.text) labels.push(options.text); return root; },
+      createSpan(options?: { text?: string }) { return root.createEl('span', options); },
+      createDiv() { return root; },
+    };
+    class SettingTab { containerEl = root; }
+    class Setting {
+      setName(name: string) { labels.push(name); return this; }
+      setDesc() { return this; } addToggle() { return this; } addText() { return this; } addDropdown() { return this; }
+      setButtonText(name: string) { labels.push(name); return this; }
+      setCta() { return this; } setWarning() { return this; } onClick() { return this; }
+      addButton(render: (button: Setting) => void) { render(new Setting()); return this; }
+    }
+    const Runtime = load('src/safeguard/runtime.js', {
+      obsidian: { Component, Plugin, PluginSettingTab: SettingTab, Modal: class {}, Setting, Notice: class {}, normalizePath: (p: string) => p },
+    });
+    let tab: { display(): void } | undefined;
+    const guard = new Runtime({ manifest: {}, app: {}, addSettingTab(value: typeof tab) { tab = value; } },
+      (english: string, chinese: string) => locale === 'zh' ? chinese : english);
+    guard.loadData = async () => null;
+    guard.startProxy = async () => false;
+    guard.setupVaultModeGuard = () => {};
+    guard.installDirectProviderVisionHook = () => {};
+    guard.getAdvancedRoute = () => null;
+    guard.getCompressionModelOptions = () => [];
+    guard.getContextState = () => ({});
+    guard.getContextHealth = () => ({ modelLabel: 'Synthetic model', ratio: 0, level: 'healthy' });
+    await guard.initialize();
+    tab!.display();
+    expect(labels).toEqual(expect.arrayContaining([enabled, apply]));
+  },
+);

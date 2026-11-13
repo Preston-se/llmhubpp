@@ -45,7 +45,7 @@ vi.mock("obsidian", () => {
   }
   return { Setting, Modal, Notice: class { constructor(message: string) { h.notices.push(message); } }, Platform: { isMobile: false } };
 });
-vi.mock("src/i18n", () => ({ t: (key: string) => key }));
+vi.mock("src/i18n", () => ({ t: (key: string) => key, getLocale: () => "en" }));
 vi.mock("src/types", () => ({ KNOWN_PROVIDER_DEFAULTS: {}, normalizeDeprecatedGeminiModelName: (s: string) => s }));
 vi.mock("src/core/openaiProvider", () => ({ verifyApiProvider: h.verify, verifyOpencodeGo: h.verify }));
 vi.mock("src/core/anthropicProvider", () => ({ verifyAnthropicProvider: h.verify }));

@@ -1,3 +1,4 @@
+import { settingsText as tr } from './settingsText';
 import { Modal, Setting, Notice } from "obsidian";
 import { fetchLocalLlmModels } from "src/core/localLlmProvider";
 import { attestConnection, getVerificationFingerprint } from 'src/configuration/verification';
@@ -46,7 +47,7 @@ export class LocalLlmModal extends Modal {
       .setName(t("settings.apiProviderName"))
       .addText((text) => {
         text
-          .setPlaceholder("Ollama tools")
+          .setPlaceholder(tr("Ollama tools", "Ollama 工具"))
           .setValue(this.config.name || "")
           .onChange((value) => {
             this.config.name = value;
