@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.261113.1
+
+- Every package now ships `build-report.json`, which records the commit, repository, and workflow run that produced the ZIP, so a downloaded package can be checked against its source.
+- Adds a release acceptance record and a promotion workflow: a beta becomes stable with the same verified files, and the default run only checks.
+- Settings, indexes, chats, local models, and custom presets and scripts from earlier versions stay as they are.
+
 ## 1.261112.2
 
 - Localize settings in Simplified Chinese and English, including shared index controls, the settings home, configuration dialogs, and Safe Guard settings.
