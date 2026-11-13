@@ -158,6 +158,24 @@ else process.exitCode = 2;
   }
 });
 
+test('reports a draft release before looking up its missing tag', async () => {
+  const ws = await workspace();
+  const { gh, log } = fakeGh({ overrides: {
+    [`release view ${version} --json isDraft,isPrerelease,tagName`]:
+      JSON.stringify({ isDraft: true, isPrerelease: true, tagName: version }),
+  } });
+  try {
+    await assert.rejects(
+      runPromotion({ root: ws.root, assetsDir: ws.assetsDir, version, repository, gh, promote: true }),
+      /still a draft release/,
+    );
+    assert.equal(log.some(args => args[0] === 'api' && args[1].includes('/git/ref/tags/')), false,
+      'a draft has no tag yet, so the tag lookup must not run first');
+  } finally {
+    await cleanup(ws.root);
+  }
+});
+
 test('the shipped example record can never be promoted as-is', async () => {
   const example = JSON.parse(await readFile(path.join(repoRoot, 'docs', 'releases', 'example.json'), 'utf8'));
   const matching = { version: example.version, commit: example.commit, zipSha256: example.zipSha256 };
