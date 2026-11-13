@@ -5,6 +5,7 @@ import { sendTestTrace, isLangfuseAvailable } from "src/tracing/langfuse";
 import { formatError } from "obsidian-llm-hub-common/core";
 import { credentialSlot } from "src/core/credentialBundle";
 import { markCredentialConfiguredElsewhere } from "./credentialStorageSettings";
+import { settingsText as tr } from "./settingsText";
 import type { SettingsContext } from "./settingsContext";
 
 export function displayLangfuseSettings(containerEl: HTMLElement, ctx: SettingsContext): void {
@@ -12,6 +13,8 @@ export function displayLangfuseSettings(containerEl: HTMLElement, ctx: SettingsC
   const langfuse = plugin.settings.langfuse ?? { ...DEFAULT_LANGFUSE_SETTINGS };
 
   if (!isLangfuseAvailable()) {
+    new Setting(containerEl).setName(tr("Tracing is unavailable in this build", "此版本未启用调用追踪"))
+      .setDesc(tr("Langfuse settings are available in the tracing build.", "Langfuse 设置可在启用追踪的构建中使用。"));
     return;
   }
 

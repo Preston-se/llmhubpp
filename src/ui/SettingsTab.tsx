@@ -43,7 +43,7 @@ export class SettingsTab extends PluginSettingTab {
   constructor(app: App, public plugin: LlmHubPlugin) { super(app, plugin); }
   getSettingDefinitions(): SettingDefinitionItem[] {
     const pages=buildSettingsPages((section, root) => this.mountSection(section, root, "page"));
-    return [{name:'Llmhub++',aliases:['Wiki','MCP','配置导入','配置导出'],render:setting=>renderSettingsHome(setting.settingEl,{plugin:this.plugin,display:()=>this.refreshMounted(),syncCancelRef:this.syncCancelRef},(section,root)=>this.mountSection(section,root,"modal"))},...pages];
+    return [{name:'Llmhub++',aliases:['Wiki','MCP',tr("Import configuration", '配置导入'),tr("Export configuration", '配置导出')],render:setting=>renderSettingsHome(setting.settingEl,{plugin:this.plugin,display:()=>this.refreshMounted(),syncCancelRef:this.syncCancelRef},(section,root)=>this.mountSection(section,root,"modal"))},...pages];
   }
   openSection(id:string):void {
     const section=buildSection(id);if(!section)return;
@@ -76,13 +76,17 @@ export class SettingsTab extends PluginSettingTab {
     const ctx: SettingsContext = { plugin: this.plugin.configuration?.createUiFacade(this.plugin)??this.plugin, display: () => this.refreshMounted(), syncCancelRef: this.syncCancelRef };
     const renderers: Record<string, (element: HTMLElement, context: SettingsContext) => void> = {
       menus:displayReadingMenuSettings,hotkeys:displayHotkeySettings,assistant:displayAgentConfigurationSettings,
-      transfer:element=>{new Setting(element).setName('配置导入 / 导出').setDesc('按模块备份与合并恢复；密钥可选加密携带。').addButton(b=>b.setButtonText('管理配置包').onClick(()=>new ConfigurationTransferModal(this.plugin).open()));},
-      precision:element=>{new Setting(element).setName('精细配置').setDesc('查看配置字段并预览修改；与外部智能体使用同一配置服务。').addButton(b=>b.setButtonText('打开').onClick(()=>new ConfigurationEditorModal(this.plugin).open()));},
-      help:element=>{new Setting(element).setName('Wiki 与使用指南').addButton(b=>b.setButtonText('打开离线 Wiki').onClick(()=>new HelpModal(this.plugin).open()));},
+      transfer:element=>{new Setting(element).setName(tr("Configuration import and export", '配置导入 / 导出')).setDesc(tr("Back up and merge configuration by module. Credentials can be included with encryption.", '按模块备份与合并恢复；密钥可选加密携带。')).addButton(b=>b.setButtonText(tr("Manage configuration bundle", '管理配置包')).onClick(()=>new ConfigurationTransferModal(this.plugin).open()));},
+      precision:element=>{new Setting(element).setName(tr("Fine-grained configuration", '精细配置')).setDesc(tr("Review individual fields and preview changes using the same configuration service as external agents.", '查看配置字段并预览修改；与外部智能体使用同一配置服务。')).addButton(b=>b.setButtonText(tr("Open", '打开')).onClick(()=>new ConfigurationEditorModal(this.plugin).open()));},
+      help:element=>{new Setting(element).setName(tr("Wiki and help", 'Wiki 与使用指南')).addButton(b=>b.setButtonText(tr("Open offline Wiki", '打开离线 Wiki')).onClick(()=>new HelpModal(this.plugin).open()));},
       credentials: displayCredentialStorageSettings, cli: displayCliSettings, local: displayLocalLlmSettings,
       api: displayApiProviderSettings, jev: displayJevSettings, proxy: displayProxySettings, workspace: displayToolPermissionSettings,
       history: displayChatBehaviorSettings, chat: (element, context) => displayChatSettings(element, context, false),
-      okf: displayKnowledgeSettings, edits: displayEditHistorySettings, encryption: displayEncryptionSettings,
+      okf: displayKnowledgeSettings, edits: (element, context) => {
+        displayEditHistorySettings(element, context);
+        new Setting(element).setName(tr("Edit history is active", "编辑历史已启用"))
+          .setDesc(tr("Open a note and run Show edit history from the command palette to inspect or restore an earlier version.", "打开笔记后，在命令面板运行「显示编辑历史」，可以查看或恢复之前的版本。"));
+      }, encryption: displayEncryptionSettings,
       langfuse: displayLangfuseSettings, slash: displaySlashCommandSettings, externalSkills: displayExternalSkillSettings,
       agent: displayAgentPluginSettings, rag: displayRagSettings, mcp: displayMcpServersSettings,
       source: displaySourceIngestSettings, storage: displayStorageSettings,

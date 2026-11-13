@@ -1,3 +1,4 @@
+import { settingsText } from './ui/settings/settingsText';
 import { Notice,type App } from 'obsidian';
 import { LlmHubPlugin } from './plugin';
 import SafeGuardRuntime from './safeguard/runtime.js';
@@ -51,7 +52,7 @@ export class UnifiedPlugin extends LlmHubPlugin {
     // The full package provides preset assets. Installation checks existing workspace files before writing.
     await installInboxPreset(this.app, dir, this.settings.workspaceFolder, getStoragePaths(this.settings, this.app.vault.configDir).tools);
     if (this.stopping) return;
-    const guard = new SafeGuardRuntime(this);
+    const guard = new SafeGuardRuntime(this, settingsText);
     this.safeGuard = guard;
     this.addChild(guard);
     guard.load();

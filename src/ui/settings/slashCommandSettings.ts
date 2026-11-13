@@ -1,6 +1,7 @@
 import { Setting, Notice } from "obsidian";
 import { t } from "src/i18n";
-import type { ModelType, SlashCommand } from "src/types";
+import { DEFAULT_SLASH_COMMANDS, type ModelType, type SlashCommand } from "src/types";
+import { settingsText as tr } from "./settingsText";
 import { SlashCommandModal, type SlashCommandModalOptions } from "obsidian-llm-hub-common/modals";
 import type { SettingsContext } from "./settingsContext";
 import { discoverSkills } from "src/core/skillsLoader";
@@ -55,10 +56,14 @@ export function displaySlashCommandSettings(containerEl: HTMLElement, ctx: Setti
   // List existing commands
   if (plugin.settings.slashCommands.length > 0) {
     for (const command of plugin.settings.slashCommands) {
+      const builtIn = DEFAULT_SLASH_COMMANDS[0];
+      const description = command.id === builtIn.id && command.description && command.description === builtIn.description
+        ? tr(command.description, "根据选区或当前笔记生成 HTML 信息图")
+        : command.description;
       const commandSetting = new Setting(containerEl)
         .setName(`/${command.name}`)
         .setDesc(
-          command.description ||
+          description ||
             command.promptTemplate.slice(0, 50) +
               (command.promptTemplate.length > 50 ? "..." : "")
         );

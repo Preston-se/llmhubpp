@@ -1,0 +1,26 @@
+name: Bug report / 问题反馈
+description: Report a reproducible issue with Llmhub++.
+title: "[Bug] "
+body:
+  - type: input
+    id: environment
+    attributes:
+      label: Versions / 版本
+      description: Llmhub++ version, Obsidian version, operating system, and model type if relevant.
+      placeholder: "Llmhub++ 1.x.y, Obsidian 1.15.0, Windows 10 x64, local model"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce / 复现步骤
+      description: Use the smallest example you can reproduce in a disposable vault.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual result / 预期和实际结果
+      description: Remove credentials and private note text from any logs or screenshots.
+    validations:
+      required: true

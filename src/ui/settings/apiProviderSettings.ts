@@ -1,3 +1,4 @@
+import { settingsText as tr } from './settingsText';
 import { Setting, Notice, Modal, Platform } from "obsidian";
 import { t } from "src/i18n";
 import type { ApiProviderConfig, ApiProviderType } from "src/types";
@@ -175,7 +176,7 @@ class ApiProviderModal extends Modal {
         .setName(t("settings.apiProviderName"))
         .addText((text) =>
           text
-            .setPlaceholder("My provider")
+            .setPlaceholder(tr("My provider", "我的服务"))
             .setValue(this.config.name)
             .onChange((value) => { this.config.name = value.trim(); })
         );

@@ -1,8 +1,11 @@
 # Llmhub++ for Obsidian
 
+[简体中文](README.md) · [English](README.en.md) · 日本語（旧版ガイド）
+
+このページは旧版の機能ガイドです。最新の配布状況と設定は中国語または英語の README をご覧ください。
+
 [GitHub Releases](https://github.com/Preston-se/llmhubpp/releases) · [Windows x64 のインストールとロールバック（英語）](docs/INSTALL.md) · [開発とテスト（英語）](CONTRIBUTING.md)
 
-[![DeepWiki](https://img.shields.io/badge/DeepWiki-takeshy%2Fobsidian--llm--hub-blue.svg?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTQgMTloMTZhMiAyIDAgMCAwIDItMlY3YTIgMiAwIDAgMC0yLTJINWEyIDIgMCAwIDAtMiAydjEyYTIgMiAwIDAgMSAyLTJ6Ii8+PHBhdGggZD0iTTkgMTV2LTQiLz48cGF0aCBkPSJNMTIgMTV2LTIiLz48cGF0aCBkPSJNMTUgMTV2LTQiLz48L3N2Zz4=)](https://deepwiki.com/takeshy/obsidian-llm-hub)
 
 **無料・オープンソース**の Obsidian 向け AI アシスタント。**チャット**、**ワークフロー自動化**、**セマンティック検索（RAG）**を搭載。複数の LLM プロバイダーに対応 — ニーズに合った AI を自由に選択できます。
 
@@ -1042,8 +1045,6 @@ MIT
 - [Ollama](https://ollama.com)
 - [Obsidian プラグインドキュメント](https://docs.obsidian.md/Plugins/Getting+started/Build+a+plugin)
 
-## サポート
+## 謝辞
 
-このプラグインが役に立ったら、コーヒーをおごってください！
-
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?logo=buymeacoffee)](https://buymeacoffee.com/takeshy)
+Takeshi Morita（@takeshy）の LLM Hub を基に開発しています。 [上流の LLM Hub](https://github.com/takeshy/obsidian-llm-hub) · [ライセンスと帰属](NOTICE.md)

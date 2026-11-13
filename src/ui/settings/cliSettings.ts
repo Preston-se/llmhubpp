@@ -3,6 +3,7 @@ import { verifyCli, verifyClaudeCli, verifyCodexCli } from "src/core/cliProvider
 import { t } from "src/i18n";
 import { DEFAULT_CLI_CONFIG } from "src/types";
 import { CliPathModal, type CliType } from "./CliPathModal";
+import { settingsText as tr } from "./settingsText";
 import type { SettingsContext } from "./settingsContext";
 
 export function displayCliSettings(containerEl: HTMLElement, ctx: SettingsContext): void {
@@ -24,7 +25,7 @@ export function displayCliSettings(containerEl: HTMLElement, ctx: SettingsContex
     cliType: "gemini",
     isVerified: !!cliConfig.cliVerified,
     customPath: cliConfig.geminiCliPath,
-    installCmd: "Install Google Antigravity CLI (`agy`)",
+    installCmd: tr("Install Google Antigravity CLI (agy)", "安装 Google Antigravity CLI（agy）"),
     onVerify: (statusEl) => handleVerifyCli(statusEl, plugin, display, "gemini"),
     onDisable: async () => {
       plugin.settings.cliConfig = { ...cliConfig, cliVerified: false };
@@ -86,7 +87,7 @@ function createCliVerifyRow(
 ): void {
   const setting = new Setting(containerEl)
     .setName(options.name)
-    .setDesc(`Install: ${options.installCmd}`);
+    .setDesc(options.cliType === "gemini" ? options.installCmd : tr("Install: ", "安装命令：") + options.installCmd);
 
   const statusEl = setting.controlEl.createDiv({ cls: "llm-hub-cli-row-status" });
 
@@ -177,8 +178,7 @@ async function handleVerifyCli(
   const verifyingText = cliType === "gemini" ? t("settings.cliVerifyingCli") : t("settings.cliVerifying");
   statusEl.setText(verifyingText);
 
-  const notFoundFallback = cliType === "gemini" ? "Antigravity CLI not found" :
-                           cliType === "claude" ? "Claude CLI not found" : "Codex CLI not found";
+  const notFoundFallback = tr("The CLI executable was not found.", "找不到命令行程序。");
   const loginText = cliType === "gemini" ? t("settings.cliRunGeminiLogin") :
                     cliType === "claude" ? t("settings.cliRunClaudeLogin") : t("settings.cliRunCodexLogin");
   const successNotice = cliType === "gemini" ? t("settings.geminiCliVerified") :

@@ -1,8 +1,8 @@
 // Chinese (Simplified) translations
 export const zh: Record<string, string> = {
   "index.choose": "选择可写索引",
-  "index.updateNote": "LLM Hub++ · 立即更新此笔记索引",
-  "index.forceNote": "LLM Hub++ · 强制重新索引此笔记",
+  "index.updateNote": "Llmhub++ · 立即更新此笔记索引",
+  "index.forceNote": "Llmhub++ · 强制重新索引此笔记",
   "index.current": "索引已是最新",
   "index.updated": "笔记索引已更新",
   "index.noTarget": "该文件不在可写索引范围内，或此格式需要先转换",

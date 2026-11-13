@@ -7,7 +7,7 @@ Use the Node.js version in [.node-version](.node-version) and run these commands
 ```text
 npm ci --ignore-scripts
 npm run lint -- --max-warnings 0
-npm test -- --maxWorkers=2
+npm test -- --maxWorkers=1
 npm run build
 npm run test:package
 ```
@@ -17,3 +17,5 @@ The Windows regression suite uses OpenSSL. Git for Windows includes it in `usr/b
 Reproduce user flows in a separate Obsidian vault with synthetic notes and credentials. Cover the action through its normal entry point, then include the smallest test that reproduces the failure. When a visible setting or behavior changes, update its offline Wiki topic, feature map, and configuration MCP documentation as applicable. [Development checklist](docs/DEVELOPMENT_COMPLETION.md)
 
 Keep vault data, credentials, indexes, personal environment settings, and local build evidence out of changes intended for publication. See [NOTICE.md](NOTICE.md) before modifying vendored assets or license files.
+
+[Development workflow and naming](docs/DEVELOPMENT.md) · [Windows beta release process](docs/RELEASING.md)

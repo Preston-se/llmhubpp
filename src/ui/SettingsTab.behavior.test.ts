@@ -48,9 +48,10 @@ vi.mock('obsidian', async original => {
     },
   };
 });
-vi.mock('src/i18n', () => ({ t: (key: string) => key, getLocale: () => 'zh-CN' }));
+
 vi.mock('./components/CliTerminalPanel', () => ({ default: () => null, isTerminalProvider: () => false }));
 import { SettingsTab } from './SettingsTab';
+import { setLocale, t } from 'src/i18n';
 function all(root: Element): Element[] { return [root, ...root.children.flatMap(all)]; }
 function fixture() {
   const listeners = new Set<() => void>();
@@ -60,7 +61,7 @@ function fixture() {
   const tab = new SettingsTab(plugin.app, plugin);
   return { tab, plugin, listeners };
 }
-beforeEach(() => { ui.modals = []; });
+beforeEach(() => { ui.modals = []; setLocale("zh-CN"); });
 it.each(['wiki', 'search'])('refreshes the %s Provider modal after saving an edit and releases it on close', async entry => {
   const f = fixture();
   if (entry === 'wiki') f.tab.openSection('api');
@@ -76,9 +77,9 @@ it.each(['wiki', 'search'])('refreshes the %s Provider modal after saving an edi
   const providerRow = modal.contentEl.children.find((el: Element) => el.textContent === 'Before (synthetic)')!;
   await (providerRow.children[0].children[2] as any).click();
   const editor = ui.modals.at(-1)!;
-  const nameRow = editor.contentEl.children.find((el: Element) => el.textContent === 'settings.apiProviderName')!;
+  const nameRow = editor.contentEl.children.find((el: Element) => el.textContent === t('settings.apiProviderName'))!;
   (nameRow.children[0].children[0] as any).change('After');
-  await (all(editor.contentEl).find(el => el.textContent === 'common.save') as any).click();
+  await (all(editor.contentEl).find(el => el.textContent === t('common.save')) as any).click();
   expect(f.plugin.settings.apiProviders[0].name).toBe('After');
   expect(all(modal.contentEl).some(el => el.textContent === 'After (synthetic)')).toBe(true);
   f.plugin.settings.apiProviders.push({ ...f.plugin.settings.apiProviders[0], id: 'second', name: 'Added' });
@@ -101,4 +102,43 @@ it('refreshes two open instances of one section independently while the settings
   for (const listener of f.listeners) listener();
   expect(all(second.contentEl).some(el => el.textContent === 'Remaining (synthetic)')).toBe(true);
   second.close(); expect(f.listeners.size).toBe(0);
+});
+
+it.each([
+  ["en-US", "Manage links", "MCP guide", "Manage configuration bundle", "Open offline Wiki"],
+  ["zh-CN", "管理链接", "MCP 操作指南", "管理配置包", "打开离线 Wiki"],
+])("renders the home and new settings controls in %s without changing a custom link", (locale, manage, guide, bundle, wiki) => {
+  setLocale(locale);
+  const { tab, plugin } = fixture();
+  const renderHome = () => {
+    const element = new Element();
+    const home = tab.getSettingDefinitions()[0] as any;
+    home.render({ settingEl: element });
+    return all(element).map(item => item.textContent);
+  };
+  expect(renderHome()).toEqual(expect.arrayContaining([manage, guide + " ↗"]));
+  plugin.settings.settingsAppearance.helpLinks = [{ id: "mcp", label: "我的自定义入口", target: "help:mcp-agent-guide" }];
+  expect(renderHome()).toContain("我的自定义入口 ↗");
+  tab.openSection("transfer");
+  expect(all(ui.modals.at(-1).contentEl).map(item => item.textContent)).toContain(bundle);
+  tab.openSection("help");
+  expect(all(ui.modals.at(-1).contentEl).map(item => item.textContent)).toContain(wiki);
+});
+
+it.each([
+  ["en-US", "MCP 操作指南", "MCP guide"],
+  ["zh-CN", "MCP guide", "MCP 操作指南"],
+])("localizes a saved built-in label in a mixed link list (%s)", (locale, savedLabel, expected) => {
+  setLocale(locale);
+  const { tab, plugin } = fixture();
+  plugin.settings.settingsAppearance.helpLinks = [
+    { id: "custom", target: "https://example.invalid", label: "My notes" },
+    { id: "mcp", target: "help:mcp-agent-guide", label: savedLabel },
+    { id: "notice", target: "help:user-notice", label: "User notes", hidden: true },
+  ];
+  const home = new Element();
+  (tab.getSettingDefinitions()[0] as any).render({ settingEl: home });
+  expect(all(home).filter(element => element.textContent.endsWith(" ↗")).slice(0, 2).map(element => element.textContent)).toEqual(["My notes ↗", expected + " ↗"]);
+  expect(all(home).some(element => element.textContent === "User notes ↗" || element.textContent === "用户须知 ↗")).toBe(false);
+  expect(plugin.settings.settingsAppearance.helpLinks[1].label).toBe(savedLabel);
 });

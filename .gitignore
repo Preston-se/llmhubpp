@@ -29,3 +29,6 @@ data.json
 # Reproducible v1.261107.2 benchmark payloads and isolated desktop profile.
 .superpowers/execution/v1.261107.2/benchmark/
 .superpowers/execution/v1.261107.2/profile/
+
+# Local test evidence
+/.superpowers/

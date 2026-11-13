@@ -1,3 +1,4 @@
+import { setLocale } from 'src/i18n';
 import {it,expect,vi,beforeEach} from 'vitest';
 const h=vi.hoisted(()=>({controls:[] as any[],pre:[] as any[]}));
 vi.mock('obsidian',async original=>{
@@ -21,13 +22,15 @@ vi.mock('obsidian',async original=>{
 });
 import {ConfigurationEditorModal} from './ConfigurationEditorModal';
 import {configurationFixture} from '../../configuration/configurationFixture.test-utils';
-beforeEach(()=>{h.controls=[];h.pre=[];});
-async function preview(){
+beforeEach(()=>{setLocale("zh-CN");h.controls=[];h.pre=[];});
+async function preview(locale = "zh-CN", selectedModel?: string){
+ setLocale(locale);
  const f=configurationFixture();f.raw.safeGuard.enabled=true;
+ if (selectedModel) f.raw.workspace.selectedModel = selectedModel;
  const modal=new ConfigurationEditorModal({app:{},configuration:{service:f.service,trackModal:()=>{}}} as any,'safeGuard');modal.onOpen();
  await vi.waitFor(()=>expect(h.controls.some(item=>item.type==='textarea')).toBe(true));
  h.controls.find(item=>item.type==='textarea').control.change('false');
- h.controls.find(item=>item.control.text==='预览差异').control.click();
+ h.controls.find(item=>item.control.text===(locale === 'en-US' ? 'Preview changes' : '预览差异')).control.click();
  await vi.waitFor(()=>expect(h.pre.at(-1).text).toContain('enabled'));
  return f;
 }
@@ -35,4 +38,19 @@ it('shows risk explanations in the local configuration preview',async()=>{await 
 it('lets the explicit native apply button submit the same reviewed risk acknowledgment',async()=>{
  const f=await preview();h.controls.find(item=>item.control.text==='应用').control.click();
  await vi.waitFor(()=>expect(f.raw.safeGuard.enabled).toBe(false));expect(f.writes).toEqual(['safeGuard']);
+});
+
+it('explains the Safe Guard risk in an English preview', async () => {
+ await preview('en-US');
+ expect(h.pre.at(-1).text).toContain('Safe Guard checks will be disabled for requests sent through the proxy.');
+});
+
+it.each([
+  ["api:missing:model", "DANGLING_MODEL_REFERENCE", "The saved model selection is unavailable."],
+  ["api:a:model", "MODEL_NEEDS_CHECK", "The selected model has not been verified."],
+])("explains a saved model warning in the English preview (%s)", async (model, code, message) => {
+ await preview("en-US", model);
+ expect(JSON.parse(h.pre.at(-1).text).warnings).toEqual([
+  expect.objectContaining({ code, message, path: "workspace.selectedModel" }),
+ ]);
 });

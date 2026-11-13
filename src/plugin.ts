@@ -89,6 +89,7 @@ import { EditHistoryModal } from "src/ui/components/EditHistoryModal";
 import { formatError, configureClassPrefix } from "obsidian-llm-hub-common/core";
 import { DEFAULT_CLI_CONFIG, DEFAULT_DISCORD_SETTINGS, DEFAULT_EDIT_HISTORY_SETTINGS, DEFAULT_GEMINI_EMBEDDING_MODEL, DEFAULT_LANGFUSE_SETTINGS, DEFAULT_WORKSPACE_FOLDER, hasVerifiedCli, isRagIndexIdleSeconds, RAG_INDEX_IDLE_DEFAULT_SECONDS } from "src/types";
 import { initLocale, t } from "src/i18n";
+import { settingsText as tr } from "./ui/settings/settingsText";
 import { registerWorkflowCodeBlockProcessor } from "src/ui/workflowCodeBlock";
 import { getSlashCommandSearchSelection } from "src/core/webSearch";
 import {
@@ -689,7 +690,7 @@ export class LlmHubPlugin extends Plugin {
     });
     this.addCommand({
       id: "open-discussion-hub",
-      name: "Open Discussion Hub",
+      name: tr("Open Discussion Hub", "打开 Discussion Hub"),
       callback: () => { void this.openDiscussionHub(); },
     });
 
@@ -791,14 +792,14 @@ export class LlmHubPlugin extends Plugin {
     );
 
     // Add ribbon icon
-    this.addRibbonIcon("brain-circuit", "Open chat", () => {
+    this.addRibbonIcon("brain-circuit", tr("Open chat", "打开对话"), () => {
       void this.activateChatView();
     });
 
     // Add command to open chat
     this.addCommand({
       id: "open-chat",
-      name: "Open chat",
+      name: tr("Open chat", "打开对话"),
       callback: () => {
         void this.activateChatView();
       },
@@ -807,7 +808,7 @@ export class LlmHubPlugin extends Plugin {
     // Add command to toggle between chat and markdown view
     this.addCommand({
       id: "toggle-chat",
-      name: "Toggle chat / editor",
+      name: tr("Toggle chat / editor", "在对话和编辑器间切换"),
       callback: () => {
         this.toggleChatView();
       },
@@ -816,7 +817,7 @@ export class LlmHubPlugin extends Plugin {
     // Add command to open a real TTY-backed CLI terminal in the vault root
     this.addCommand({
       id: "open-cli-terminal",
-      name: "Open CLI terminal",
+      name: tr("Open CLI terminal", "打开命令行终端"),
       callback: () => {
         void this.activateCliTerminalView();
       },

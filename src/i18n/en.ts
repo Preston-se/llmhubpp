@@ -3,8 +3,8 @@ import type { SharedTranslationKey } from "obsidian-llm-hub-common/i18n";
 // English translations (base language)
 export const en = {
   "index.choose": "Choose a writable index",
-  "index.updateNote": "LLM Hub++ · update this note's index",
-  "index.forceNote": "LLM Hub++ · force reindex this note",
+  "index.updateNote": "Llmhub++ · update this note's index",
+  "index.forceNote": "Llmhub++ · force reindex this note",
   "index.current": "The note index is already up to date",
   "index.updated": "Note index updated",
   "index.noTarget": "This file is outside writable index scopes, or its format requires conversion",
@@ -309,7 +309,7 @@ export const en = {
   "settings.sourceWatchIndex": "Dedicated conversion knowledge base",
   "settings.sourceWatchIndex.desc": "Choose an unused name before first use. Only published Markdown enters this index. Other indexes are protected. Configure its embedding service under knowledge bases.",
   "settings.sourceWatchAttachment": "Source-side attachment subdirectory",
-  "settings.sourceWatchAttachment.desc": "Leave blank to use Obsidian's attachment location, falling back to 附件 beside the source. Set a relative subdirectory to override. Existing generated versions are kept.",
+  "settings.sourceWatchAttachment.desc": "Leave blank to use Obsidian's attachment location, falling back to the folder named \"附件\" beside the source. Set a relative subdirectory to override. Existing generated versions are kept.",
   "settings.sourceWatchScan": "Scan current sources",
   "settings.sourceWatchScan.desc": "Process files matching the current rules. Check task records for individual conversion and embedding failures.",
   "settings.sourceWatchTasks": "Open Tasks",
