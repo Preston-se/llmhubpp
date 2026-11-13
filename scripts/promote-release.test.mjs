@@ -158,6 +158,30 @@ else process.exitCode = 2;
   }
 });
 
+test('the command line refuses a draft before downloading anything', async () => {
+  const ws = await workspace();
+  const shim = path.join(ws.root, 'gh-draft-shim.mjs');
+  await writeFile(shim, `const args = process.argv.slice(2);
+if (args[0] === 'release' && args[1] === 'view') {
+  process.stdout.write(JSON.stringify({ isDraft: true, isPrerelease: true, tagName: args[2] }));
+} else {
+  process.stderr.write('unexpected gh call: ' + args.join(' '));
+  process.exitCode = 2;
+}
+`);
+  try {
+    const run = spawnSync(process.execPath, [
+      path.join(repoRoot, 'scripts', 'promote-release.mjs'),
+      '--version', version, '--repository', repository, '--root', ws.root,
+    ], { encoding: 'utf8', env: { ...process.env, GH_CLI: shim, PROMOTE_RELEASE: '' } });
+    assert.notEqual(run.status, 0);
+    assert.match(run.stderr, /still a draft release/);
+    assert.doesNotMatch(run.stderr, /unexpected gh call/);
+  } finally {
+    await cleanup(ws.root);
+  }
+});
+
 test('reports a draft release before looking up its missing tag', async () => {
   const ws = await workspace();
   const { gh, log } = fakeGh({ overrides: {
