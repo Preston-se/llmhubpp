@@ -1,5 +1,7 @@
 # Install or roll back the Windows x64 beta
 
+[简体中文](INSTALL.zh-CN.md) · English
+
 Use the full `llmhubpp-<version>-windows-x64.zip`. It includes the offline Wiki, Inbox presets, and Windows terminal files. Use Obsidian desktop. The manifest requires 1.13.0 or later, and the repair candidate was exercised with Obsidian 1.15.0 on Windows x64.
 
 ## First install
