@@ -42,6 +42,11 @@ export async function runPromotion({ root, assetsDir, version, repository, promo
     throw error;
   }
 
+  // A draft has no tag ref yet, so read the release state before resolving the tag.
+  const release = JSON.parse(await gh(['release', 'view', version, '--json', 'isDraft,isPrerelease,tagName']));
+  assert.equal(release.tagName, version, 'Unexpected release tag');
+  assert.equal(release.isDraft, false, `${version} is still a draft release`);
+
   const tagCommit = (await gh(['api', `repos/${repository}/git/ref/tags/${version}`, '--jq', '.object.sha'])).trim();
   const zipName = `llmhubpp-${version}-windows-x64.zip`;
   const readAsset = async name => {
@@ -58,10 +63,6 @@ export async function runPromotion({ root, assetsDir, version, repository, promo
     checksum: (await readAsset('SHA256SUMS.txt')).toString('utf8'),
     report: JSON.parse((await readAsset('build-report.json')).toString('utf8')),
   });
-
-  const release = JSON.parse(await gh(['release', 'view', version, '--json', 'isDraft,isPrerelease,tagName']));
-  assert.equal(release.tagName, version, 'Unexpected release tag');
-  assert.equal(release.isDraft, false, `${version} is still a draft release`);
 
   const build = (await gh(['api', `repos/${repository}/actions/runs/${candidate.source.runId}`,
     '--jq', '.conclusion + " " + .head_sha'])).trim();
