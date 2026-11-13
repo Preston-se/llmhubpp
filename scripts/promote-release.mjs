@@ -36,7 +36,10 @@ export async function readRelease({ version, repository, gh }) {
   // `gh release view` cannot resolve a draft by tag, so list releases and look for the version.
   const releases = JSON.parse(await gh(['release', 'list', '--json', 'tagName,isDraft,isPrerelease', '--limit', '100']));
   const release = releases.find(entry => entry.tagName === version);
-  if (!release) throw new Error(`No release or draft uses ${version}`);
+  if (!release) {
+    throw new Error(`No published release uses ${version}; publish the draft before checking promotion `
+      + '(a draft is invisible to a read-only token)');
+  }
   return release;
 }
 

@@ -252,6 +252,7 @@ for (const [name, mutate, pattern] of [
   }, /Missing build-report\.json/],
   ['a build run that did not succeed', async ws => null, /successful build run/i],
   ['a release that is still a draft', async ws => null, /draft/i],
+  ['a version with no published release', async ws => null, /No published release/],
 ]) {
   test(`refuses ${name} before promoting`, async () => {
     const ws = await workspace();
@@ -264,6 +265,9 @@ for (const [name, mutate, pattern] of [
     }
     if (name === 'a release that is still a draft') {
       overrides[releaseListKey] = releaseList({ isDraft: true, isPrerelease: true, tagName: version });
+    }
+    if (name === 'a version with no published release') {
+      overrides[releaseListKey] = releaseList({ isDraft: false, isPrerelease: true, tagName: '1.261112.2' });
     }
     const { gh, log } = fakeGh({ overrides });
     try {
