@@ -57,6 +57,9 @@ jobs:
           "version=$($artifact.version)" >> $env:GITHUB_OUTPUT
           "zip=$($artifact.zip)" >> $env:GITHUB_OUTPUT
           "checksum=$($artifact.checksum)" >> $env:GITHUB_OUTPUT
+          "report=$($artifact.report)" >> $env:GITHUB_OUTPUT
+          node scripts/release-check.mjs --assets $artifact.output --version $artifact.version --commit $env:GITHUB_SHA --repository $env:GITHUB_REPOSITORY
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
           name: llmhubpp-windows-x64
@@ -64,3 +67,4 @@ jobs:
           path: |
             ${{ steps.package.outputs.zip }}
             ${{ steps.package.outputs.checksum }}
+            ${{ steps.package.outputs.report }}

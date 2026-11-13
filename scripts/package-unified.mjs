@@ -110,7 +110,17 @@ const zip = path.join(output, zipName);
 const checksum = path.join(output, 'SHA256SUMS.txt');
 await writeFile(zip, archive, { flag: 'wx' });
 await writeFile(checksum, `${zipSha256}  ${zipName}\n`, { flag: 'wx' });
-await writeFile(path.join(output, 'build-report.json'), JSON.stringify({
+const report = path.join(output, 'build-report.json');
+await writeFile(report, JSON.stringify({
+  schemaVersion: 1,
+  platform: 'windows-x64',
+  zipName,
+  source: {
+    commit: process.env.GITHUB_SHA || null,
+    repository: process.env.GITHUB_REPOSITORY || null,
+    runId: process.env.GITHUB_RUN_ID || null,
+    runAttempt: process.env.GITHUB_RUN_ATTEMPT || null,
+  },
   status: 'windows-x64-candidate',
   pluginId: manifest.id,
   version: manifest.version,
@@ -118,4 +128,4 @@ await writeFile(path.join(output, 'build-report.json'), JSON.stringify({
   zipSha256,
   files: Object.fromEntries(names.map(name => [name, sha256(files[name])])),
 }, null, 2) + '\n', { flag: 'wx' });
-process.stdout.write(JSON.stringify({ output, zip, checksum, vault, version: manifest.version, zipSha256 }) + '\n');
+process.stdout.write(JSON.stringify({ output, zip, checksum, report, vault, version: manifest.version, zipSha256 }) + '\n');
