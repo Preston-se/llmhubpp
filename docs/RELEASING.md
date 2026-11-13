@@ -10,7 +10,7 @@
 
 ## 晋级为稳定版
 
-稳定版沿用同一次内测的附件，不重新打包，也不产生新标签。前提是该内测已按[晋级验收记录](RELEASE_ACCEPTANCE.md)完成验收，并把记录提交到 `main` 的 `docs/releases/<版本>.json`。
+稳定版沿用同一次内测的附件，不重新打包，也不产生新标签。前提有两个：该内测已经公开（草稿不行，只读令牌看不到草稿），以及已按[晋级验收记录](RELEASE_ACCEPTANCE.md)完成验收，并把记录提交到 `main` 的 `docs/releases/<版本>.json`。
 
 1. 先只检查：在 Actions 运行 **Check or promote Windows stable release**，版本填内测版本，`publish` 保持 `false`。这一步下载已发布附件、核对摘要、提交和构建记录，只写 `dist/promotion/verification.json`，不改 Release。
 2. 读检查产物里的 `status`、`environments` 和 `zipSha256`。`status` 为 `ready-for-promotion` 才继续；报错就按提示补验收记录或重新验收。
