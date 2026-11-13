@@ -36,6 +36,9 @@
 > [!NOTE]
 > 当前内测包面向 Windows x64。清单最低要求 Obsidian 1.13.0。原生验收使用 Windows 10 x64 和 Obsidian 1.15.0，Windows 11 与最低版本实机仍待验。
 
+> [!IMPORTANT]
+> 现在发布的都是内测版。稳定版从已完成验收的同一次内测晋级，附件和摘要都不变；晋级之前，Releases 里最新的预发行版本就是可用版本。[发布与晋级](docs/RELEASING.md) · [验收项](docs/RELEASE_ACCEPTANCE.md)
+
 ## 从一篇笔记开始
 
 ![连接文本模型、选择知识库、提问并打开引用](docs/images/readme/ask-with-citations.svg)
